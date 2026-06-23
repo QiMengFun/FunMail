@@ -16,6 +16,7 @@ export function buildMailList(endpoint) {
     detail: null,
     detailError: '',
     detailTab: 'html', // 'html' | 'text'
+    isDark: document.documentElement.getAttribute('data-theme') === 'dark',
 
     async loadMails() {
       this.loading = true;
@@ -90,10 +91,13 @@ export function buildMailList(endpoint) {
       const html = this.detail?.body_html || '';
       if (!html) return '';
       const baseHref = window.location.origin + '/';
-      // 链接全部新窗口打开
+      const dark = this.isDark;
+      const style = dark
+        ? `body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e2e8f0 !important;background-color:#1e293b !important;line-height:1.6;padding:12px;margin:0}body *{color:inherit}div,p,span,li,dd,dt{color:#e2e8f0 !important}img{max-width:100%}a{color:#60a5fa !important}blockquote{border-left:3px solid #475569 !important;margin:8px 0;padding:4px 12px;color:#94a3b8 !important;background:#0f172a !important}table{border-color:#334155 !important;background-color:#1e293b !important}td,th{border-color:#334155 !important;color:#e2e8f0 !important;background-color:#1e293b !important}font{color:#e2e8f0 !important}`
+        : `body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#222;line-height:1.6;padding:12px;margin:0}img{max-width:100%}blockquote{border-left:3px solid #ddd;margin:8px 0;padding:4px 12px;color:#666;background:#f8f8f8}`;
       return `<!doctype html><html><head><meta charset="utf-8">
         <base target="_blank" href="${baseHref}">
-        <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#222;line-height:1.6;padding:12px;margin:0}img{max-width:100%}blockquote{border-left:3px solid #ddd;margin:8px 0;padding:4px 12px;color:#666;background:#f8f8f8}</style>
+        <style>${style}</style>
         </head><body>${html}</body></html>`;
     },
 

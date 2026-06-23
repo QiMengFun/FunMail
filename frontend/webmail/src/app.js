@@ -17,6 +17,8 @@ export function webmailApp() {
       this.isDark = !this.isDark;
       document.documentElement.setAttribute('data-theme', this.isDark ? 'dark' : 'light');
       localStorage.setItem('webmail_theme', this.isDark ? 'dark' : 'light');
+      this.inbox.isDark = this.isDark;
+      this.sent.isDark = this.isDark;
     },
 
     // 鉴权状态

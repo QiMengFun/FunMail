@@ -321,7 +321,7 @@
                 <div class="detail-body" x-show="inbox.detail && !inbox.detailLoading">
                   <!-- 退信原因 - 在邮件内容上方 -->
                   <div x-show="inbox.detail?.reject_reason" class="error-msg" style="margin-bottom:16px" x-text="t('wm_bounce_reason') + '：' + inbox.detail?.reject_reason"></div>
-                  <iframe x-show="inbox.detailTab === 'html' && inbox.detail?.body_html" :srcdoc="inbox.detail?.body_html || ''" sandbox="allow-popups" style="width:100%;height:calc(100vh - 280px);border:0"></iframe>
+                  <iframe x-show="inbox.detailTab === 'html' && inbox.detail?.body_html" :srcdoc="inbox.renderHtmlIframe()" sandbox="allow-popups" style="width:100%;height:calc(100vh - 280px);border:0"></iframe>
                   <pre x-show="inbox.detailTab === 'text' || !inbox.detail?.body_html" x-text="inbox.detail?.body_text || ''"></pre>
                   <!-- 附件列表 -->
                   <div x-show="inbox.detail?.attachments && inbox.detail.attachments.length > 0" style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
@@ -427,7 +427,7 @@
                 <div class="detail-body" x-show="sent.detail && !sent.detailLoading">
                   <!-- 退信原因 - 在邮件内容上方 -->
                   <div x-show="sent.detail?.reject_reason" class="error-msg" style="margin-bottom:16px" x-text="t('wm_bounce_reason') + '：' + sent.detail?.reject_reason"></div>
-                  <iframe x-show="sent.detailTab === 'html' && sent.detail?.body_html" :srcdoc="sent.detail?.body_html || ''" sandbox="allow-popups" style="width:100%;height:calc(100vh - 280px);border:0"></iframe>
+                  <iframe x-show="sent.detailTab === 'html' && sent.detail?.body_html" :srcdoc="sent.renderHtmlIframe()" sandbox="allow-popups" style="width:100%;height:calc(100vh - 280px);border:0"></iframe>
                   <pre x-show="sent.detailTab === 'text' || !sent.detail?.body_html" x-text="sent.detail?.body_text || ''"></pre>
                   <div x-show="sent.detail?.attachments && sent.detail.attachments.length > 0" style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
                     <div style="font-weight:600;font-size:13px;margin-bottom:8px" x-text="t('wm_compose_attachments')"></div>
