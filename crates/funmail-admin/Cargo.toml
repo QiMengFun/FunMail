@@ -1,0 +1,51 @@
+[package]
+name = "funmail-admin"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+funmail-common = { workspace = true }
+tokio = { workspace = true }
+axum = { workspace = true }
+tower-http = { workspace = true }
+sqlx = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+argon2 = { workspace = true }
+jsonwebtoken = { workspace = true }
+chrono = { workspace = true }
+rcgen = { workspace = true }
+rsa = { workspace = true }
+rand = "0.8"
+reqwest = { workspace = true }
+base64 = { workspace = true }
+p256 = { workspace = true }
+pkcs8 = { workspace = true }
+sha2 = { workspace = true }
+hmac = { workspace = true }
+sysinfo = { workspace = true }
+dashmap = { workspace = true }
+arc-swap = { workspace = true }
+lettre = { workspace = true }
+uuid = { workspace = true }
+hickory-resolver = { workspace = true }
+hickory-proto = { workspace = true }
+mail-parser = { workspace = true }
+mail-builder = { workspace = true }
+encoding_rs = { workspace = true }
+instant-acme = { workspace = true }
+http-body-util = "0.1"
+http = "1"
+hyper = "1"
+hyper-util = "0.1"
+tower = { version = "0.4", features = ["util"] }
+tokio-rustls = { workspace = true }
+rustls = { workspace = true }
+async-trait = { workspace = true }
+bytes = { workspace = true }
+regex = { workspace = true }

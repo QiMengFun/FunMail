@@ -1,0 +1,50 @@
+# FunMail Release 构建：交叉编译出 Linux 二进制
+FROM rust:1.75-slim-bookworm AS builder
+
+RUN apt-get update && apt-get install -y \
+    pkg-config libssl-dev musl-tools cmake make \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN rustup target add x86_64-unknown-linux-gnu
+
+WORKDIR /build
+
+# 复制整个工作区
+COPY Cargo.toml Cargo.lock* ./
+COPY crates/ ./crates/
+
+# 构建所有服务
+RUN cargo build --release --target x86_64-unknown-linux-gnu \
+    -p funmail-smtp \
+    -p funmail-pop3 \
+    -p funmail-imap \
+    -p funmail-delivery \
+    -p funmail-admin
+
+# 收集产物
+RUN mkdir -p /output && \
+    cp /build/target/x86_64-unknown-linux-gnu/release/funmail-smtp /output/ && \
+    cp /build/target/x86_64-unknown-linux-gnu/release/funmail-pop3 /output/ && \
+    cp /build/target/x86_64-unknown-linux-gnu/release/funmail-imap /output/ && \
+    cp /build/target/x86_64-unknown-linux-gnu/release/funmail-delivery /output/ && \
+    cp /build/target/x86_64-unknown-linux-gnu/release/funmail-admin /output/
+
+# 前端：直接复制源文件（前端静态文件，部署到服务器后再处理）
+FROM alpine:latest AS frontend
+RUN apk add --no-cache bash
+WORKDIR /output
+COPY frontend/ ./
+RUN echo "BUILD_TIME=$(date +%s)" > /tmp/buildinfo
+
+# 最终镜像：包含二进制和前端
+FROM alpine:latest
+RUN apk add --no-cache bash
+WORKDIR /opt/funmail-build
+COPY --from=builder /output/ ./bin/
+COPY --from=frontend /output/ ./frontend/
+COPY sql/ ./sql/
+COPY install-release.sh ./
+COPY build-info.txt* ./
+RUN chmod +x ./bin/*
+
+CMD ["/bin/sh"]

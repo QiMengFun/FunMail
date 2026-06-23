@@ -1,0 +1,114 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/funmail-common",
+    "crates/funmail-smtp",
+    "crates/funmail-pop3",
+    "crates/funmail-imap",
+    "crates/funmail-delivery",
+    "crates/funmail-admin",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+repository = "https://github.com/funmail/funmail"
+
+[workspace.dependencies]
+# 异步运行时
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+
+# Web框架
+axum = { version = "0.8", features = ["multipart"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+# 序列化
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# 数据库
+sqlx = { version = "0.8", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "json", "uuid"] }
+
+# 日志
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "registry"] }
+
+# 时间
+chrono = { version = "0.4", features = ["serde", "clock"] }
+
+# 错误处理
+thiserror = "2"
+anyhow = "1"
+
+# 密码哈希
+argon2 = "0.5"
+
+# JWT
+jsonwebtoken = "9"
+
+# TLS
+rustls = { version = "0.23", default-features = true, features = ["ring", "logging", "std", "tls12"] }
+tokio-rustls = { version = "0.26", default-features = true, features = ["ring"] }
+
+# 证书生成
+rcgen = "0.13"
+
+# ACME 证书自动申请 (Let's Encrypt)
+instant-acme = "0.7"
+
+# HTTP客户端（ACME证书申请）
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# Base64编码
+base64 = "0.22"
+
+# 加密
+p256 = "0.13"
+pkcs8 = { version = "0.10", features = ["alloc"] }
+sha2 = "0.10"
+hmac = "0.12"
+
+# 邮件解析与构建
+mail-parser = "0.10"
+mail-builder = "0.4"
+
+# 字符集解码（GBK/Big5/Shift_JIS 等）
+encoding_rs = "0.8"
+
+# DNS解析（MX/SPF/DKIM/DMARC）
+hickory-resolver = "0.25"
+hickory-proto = "0.25"
+
+# DKIM签名
+rsa = { version = "0.9", features = ["sha2"] }
+ed25519-dalek = "2"
+
+# 正则
+regex = "1"
+
+# 并发 HashMap
+dashmap = "6"
+
+# 原子指针交换
+arc-swap = "1"
+
+# 配置
+clap = { version = "4", features = ["derive", "env"] }
+
+# 系统信息
+sysinfo = "0.33"
+
+# 邮件发送
+lettre = { version = "0.11", default-features = false, features = ["builder", "hostname", "rustls-tls", "smtp-transport", "pool"] }
+
+# UUID
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# Bytes
+bytes = "1"
+
+# 内部crate
+funmail-common = { path = "crates/funmail-common" }

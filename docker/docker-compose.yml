@@ -1,0 +1,174 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: funmail-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: funmail
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-funmail_secure_2026}
+      POSTGRES_DB: funmail
+    volumes:
+      - pg_data:/var/lib/postgresql
+      - ../sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../sql/logs_schema.sql:/docker-entrypoint-initdb.d/02-logs-schema.sql:ro
+      - ./create-logs-db.sh:/docker-entrypoint-initdb.d/03-create-logs-db.sh:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U funmail"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 60s
+    networks:
+      - funmail-net
+
+  clamav:
+    image: clamav/clamav:latest
+    container_name: funmail-clamav
+    restart: unless-stopped
+    environment:
+      CLAMAV_NO_CLAMD: "false"
+      CLAMAV_NO_FRESHCLAMD: "false"
+      CLAMAV_NO_MILTERD: "true"
+      FRESHCLAM_CHECKS: "1"
+    volumes:
+      - clamav_data:/var/lib/clamav
+    networks:
+      - funmail-net
+    healthcheck:
+      test: ["CMD-SHELL", "echo PING | nc -w 2 localhost 3310 | grep PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  funmail:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        - USE_CHINA_MIRROR=${USE_CHINA_MIRROR:-false}
+        - REGISTRY_MIRROR=${REGISTRY_MIRROR:-docker.io}
+    image: funmail:latest
+    restart: unless-stopped
+
+  smtp:
+    image: funmail:latest
+    container_name: funmail-smtp
+    restart: unless-stopped
+    command: ["/usr/local/bin/funmail-smtp", "--database-url", "postgres://funmail:${PG_PASSWORD:-funmail_secure_2026}@postgres:5432/funmail"]
+    ports:
+      - "25:25"
+      - "587:587"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      funmail:
+        condition: service_started
+      clamav:
+        condition: service_started
+    environment:
+      RUST_LOG: info
+      CLAMD_TCP_HOST: clamav
+    dns:
+      - 8.8.8.8
+      - 114.114.114.114
+    volumes:
+      - mail_data:/var/lib/funmail/maildir
+    networks:
+      - funmail-net
+
+  pop3:
+    image: funmail:latest
+    container_name: funmail-pop3
+    restart: unless-stopped
+    command: ["/usr/local/bin/funmail-pop3", "--database-url", "postgres://funmail:${PG_PASSWORD:-funmail_secure_2026}@postgres:5432/funmail"]
+    ports:
+      - "110:110"
+      - "995:995"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      funmail:
+        condition: service_started
+    environment:
+      RUST_LOG: info
+    volumes:
+      - mail_data:/var/lib/funmail/maildir
+    networks:
+      - funmail-net
+
+  imap:
+    image: funmail:latest
+    container_name: funmail-imap
+    restart: unless-stopped
+    command: ["/usr/local/bin/funmail-imap", "--database-url", "postgres://funmail:${PG_PASSWORD:-funmail_secure_2026}@postgres:5432/funmail"]
+    ports:
+      - "143:143"
+      - "993:993"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      funmail:
+        condition: service_started
+    environment:
+      RUST_LOG: info
+    volumes:
+      - mail_data:/var/lib/funmail/maildir
+    networks:
+      - funmail-net
+
+  delivery:
+    image: funmail:latest
+    container_name: funmail-delivery
+    restart: unless-stopped
+    command: ["/usr/local/bin/funmail-delivery", "--database-url", "postgres://funmail:${PG_PASSWORD:-funmail_secure_2026}@postgres:5432/funmail", "--maildir-base", "/var/lib/funmail/maildir", "--hostname", "${MAIL_HOSTNAME:-mail.example.com}", "--max-retries", "${DELIVERY_MAX_RETRIES:-3}", "--retry-interval-sec", "${DELIVERY_RETRY_INTERVAL:-30}"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      funmail:
+        condition: service_started
+    environment:
+      RUST_LOG: info
+    dns:
+      - 8.8.8.8
+      - 114.114.114.114
+    volumes:
+      - mail_data:/var/lib/funmail/maildir
+    networks:
+      - funmail-net
+
+  admin:
+    image: funmail:latest
+    container_name: funmail-admin
+    restart: unless-stopped
+    command: ["/usr/local/bin/funmail-admin", "--listen", "0.0.0.0:10002", "--static-dir", "/etc/funmail/frontend", "--database-url", "postgres://funmail:${PG_PASSWORD:-funmail_secure_2026}@postgres:5432/funmail"]
+    ports:
+      - "10002:10002"
+      - "80:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      funmail:
+        condition: service_started
+    environment:
+      RUST_LOG: info
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-funmail2026}
+      SERVER_IP: ${SERVER_IP:-}
+    volumes:
+      - mail_data:/var/lib/funmail/maildir
+    networks:
+      - funmail-net
+
+volumes:
+  pg_data:
+    driver: local
+  mail_data:
+    driver: local
+  clamav_data:
+    driver: local
+
+networks:
+  funmail-net:
+    driver: bridge

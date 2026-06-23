@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#3b82f6">
+  <title x-text="t('wm_login_title')">FunMail Webmail</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'%3E%3Cpath d='M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 2v.4l8 5 8-5V8H4zm0 2.7V16h16v-5.3l-8 5-8-5z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/src/style.css?v=6">
+  <script type="module" src="/src/app.js?v=6"></script>
+  <script src="/src/vendor/i18n.js"></script>
+  <script>
+    if (typeof window.t !== 'function') {
+      window.t = function(k) { return k; };
+      window.setLang = function() {};
+      window.getLang = function() { return 'zh'; };
+    }
+  </script>
+  <script>
+    // 主题初始化：在渲染前应用，避免闪烁
+    (function() {
+      var saved = localStorage.getItem('webmail_theme');
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <script>
+    // 拦截 Alpine 自动 start
+    (function () {
+      let _realStart = null;
+      let _alpineRef = null;
+      Object.defineProperty(window, 'Alpine', {
+        configurable: true,
+        set(v) {
+          if (v && typeof v.start === 'function' && !_realStart) {
+            _realStart = v.start;
+            v.start = function () {};
+          }
+          _alpineRef = v;
+        },
+        get() { return _alpineRef; },
+      });
+      window.__webmailRealAlpineStart = function () {
+        if (_realStart) {
+          if (_alpineRef) _alpineRef.start = _realStart;
+          _realStart();
+        }
+      };
+    })();
+  </script>
+  <script defer src="/src/alpinejs.min.js?v=5"></script>
+  <script>
+    (function bootstrapAlpine() {
+      let tries = 0;
+      const tick = () => {
+        tries++;
+        const mixinsReady = !!(window.pageMixins && window.pageMixins.webmailApp);
+        const alpineReady = !!window.Alpine;
+        if (mixinsReady && alpineReady) {
+          try { window.__webmailRealAlpineStart(); } catch (e) { console.warn('[webmail] start 异常:', e); }
+          console.log('[webmail] Alpine 启动完成');
+        } else if (tries < 400) {
+          setTimeout(tick, 25);
+        } else {
+          console.error('[webmail] 启动超时: pageMixins=', !!window.pageMixins, 'Alpine=', !!window.Alpine);
+        }
+      };
+      tick();
+    })();
+  </script>
+</head>
+<body x-data="pageMixins.webmailApp()" x-init="init()" x-cloak>
+
+  <!-- 登录页 -->
+  <div class="login-wrap" x-show="!authLoading && !authed" x-cloak>
+    <div class="login-card">
+      <div x-data="loginPage()" x-init="init()">
+        <img class="login-logo" src="/src/static/images/logo2.png" alt="logo">
+
+        <!-- 登录表单 -->
+        <template x-if="!showRegister">
+          <div>
+            <template x-if="error">
+              <div class="error-msg" x-text="error"></div>
+            </template>
+
+            <form @submit.prevent="submit()">
+              <div class="field">
+                <label x-text="t('wm_login_email')"></label>
+                <input class="input" type="email" x-model="email" placeholder="user@example.com" autocomplete="username" required>
+              </div>
+              <div class="field">
+                <label x-text="t('wm_login_password')"></label>
+                <div class="pwd-wrap">
+                  <input class="input" type="password" :type="showPwd ? 'text' : 'password'" x-model="password" placeholder="••••••••" autocomplete="current-password" required>
+                  <button type="button" class="pwd-toggle" @click="showPwd = !showPwd" tabindex="-1" :aria-label="showPwd ? t('wm_login_hide_pwd') : t('wm_login_show_pwd')">
+                    <svg x-show="!showPwd" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg x-show="showPwd" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  </button>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px" type="submit" :disabled="loading">
+                <span class="spinner" x-show="loading"></span>
+                <span x-text="t('wm_login_btn')"></span>
+              </button>
+            </form>
+            <div x-show="registerEnabled" class="text-center mt-3">
+              <a href="#" class="text-sm" style="color:var(--primary)" @click.prevent="toggleRegister()" x-text="t('wm_login_register')"></a>
+            </div>
+          </div>
+        </template>
+
+        <!-- 注册表单 -->
+        <template x-if="showRegister">
+          <div>
+            <div x-show="regSuccess" class="text-center" style="color:var(--success);padding:20px 0">
+              <div style="font-size:18px;margin-bottom:8px">✓</div>
+              <div x-text="regSuccess"></div>
+              <a href="#" class="text-sm" style="color:var(--primary)" @click.prevent="showRegister=false" x-text="t('wm_register_back')"></a>
+            </div>
+            <form @submit.prevent="submitRegister()" x-show="!regSuccess">
+              <div class="text-center mb-3" style="font-size:15px;font-weight:600" x-text="t('wm_register_title')"></div>
+              <div x-show="regError" class="error-msg" x-text="regError"></div>
+              <div class="field">
+                <label x-text="t('wm_register_email')"></label>
+                <input class="input" type="email" x-model="regEmail" placeholder="user@example.com" required>
+              </div>
+              <div class="field">
+                <label x-text="t('wm_register_password')"></label>
+                <input class="input" type="password" x-model="regPassword" :placeholder="t('wm_register_password_hint')" required>
+              </div>
+              <div class="field">
+                <label x-text="t('wm_register_confirm')"></label>
+                <input class="input" type="password" x-model="regConfirm" :placeholder="t('wm_register_confirm_hint')" required>
+              </div>
+              <div class="field">
+                <label x-text="t('wm_register_captcha')"></label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span class="captcha-question" x-text="captchaQuestion" style="font-size:15px;white-space:nowrap;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border-input);border-radius:6px;cursor:pointer" @click="loadCaptcha()" :title="t('wm_register_captcha_refresh')"></span>
+                  <span style="font-weight:600">=</span>
+                  <input class="input" type="number" x-model="captchaAnswer" placeholder="?" required style="width:80px">
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px" type="submit" :disabled="regLoading">
+                <span class="spinner" x-show="regLoading"></span>
+                <span x-text="t('wm_register_btn')"></span>
+              </button>
+              <div class="text-center mt-3">
+                <a href="#" class="text-sm" style="color:var(--primary)" @click.prevent="toggleRegister()" x-text="t('wm_login_no_account')"></a>
+              </div>
+            </form>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- 已登录主界面 -->
+  <div x-show="!authLoading && authed" x-cloak>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <button class="hamburger" @click="toggleMobileNav()" :aria-label="t('nav_menu')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <a class="brand" href="/inbox" @click.prevent="navigate('inbox')">
+          <img class="brand-logo" src="/src/static/images/logo2.png" alt="logo">
+        </a>
+        <div class="user-chip" x-show="user">
+          <span class="avatar" x-text="(user?.display_name || user?.email || '?').slice(0,1).toUpperCase()"></span>
+          <span x-text="user?.email"></span>
+        </div>
+        <!-- 主题切换 -->
+        <button class="theme-btn" @click="toggleTheme()" :title="isDark ? t('wm_theme_light') : t('wm_theme_dark')">
+          <svg x-show="!isDark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg x-show="isDark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <!-- 语言切换 -->
+        <div class="lang-wrap" @click.outside="langOpen = false">
+          <button @click="langOpen = !langOpen" class="lang-btn">
+            <svg class="lang-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+            <span x-text="lang === 'zh' ? t('lang_zh') : t('lang_en')"></span>
+            <svg class="lang-arrow" :class="langOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div x-show="langOpen" x-transition.opacity.duration.150ms class="lang-dropdown" style="min-width:110px">
+            <button @click="switchLang('zh'); langOpen = false" class="lang-option" :class="lang === 'zh' ? 'lang-selected' : ''" x-text="t('lang_zh')"></button>
+            <button @click="switchLang('en'); langOpen = false" class="lang-option" :class="lang === 'en' ? 'lang-selected' : ''" x-text="t('lang_en')"></button>
+          </div>
+        </div>
+        <button class="logout-btn" @click="logout()" x-text="t('nav_logout')"></button>
+      </div>
+    </header>
+
+    <div class="app">
+      <!-- 侧边栏 -->
+      <aside class="sidenav" :class="{ 'mobile-open': mobileNavOpen }">
+        <!-- 写邮件按钮 -->
+        <button class="nav-compose-btn" @click="navigate('compose')" x-show="canSend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span x-text="t('nav_compose')"></span>
+        </button>
+
+        <!-- 搜索框 -->
+        <div class="nav-search">
+          <input class="input" :placeholder="t('wm_search_placeholder')" x-model="searchKeyword" @keydown.enter="doSearch()" style="width:100%;padding:6px 14px;font-size:13px">
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-item" :class="{ active: page === 'inbox' }">
+            <a href="/inbox" @click.prevent="navigate('inbox')" style="display:flex;align-items:center;gap:10px;flex:1;color:inherit;text-decoration:none">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+              <span x-text="t('nav_inbox')"></span>
+            </a>
+            <span class="count" x-show="inbox.unreadCount > 0" x-text="inbox.unreadCount"></span>
+          </div>
+          <div class="nav-item" :class="{ active: page === 'sent' }">
+            <a href="/sent" @click.prevent="navigate('sent')" style="display:flex;align-items:center;gap:10px;flex:1;color:inherit;text-decoration:none">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span x-text="t('nav_sent')"></span>
+            </a>
+          </div>
+          <div class="nav-item" :class="{ active: page === 'contacts' }">
+            <a href="/contacts" @click.prevent="navigate('contacts')" style="display:flex;align-items:center;gap:10px;flex:1;color:inherit;text-decoration:none">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span x-text="t('wm_nav_contacts')"></span>
+            </a>
+          </div>
+          <div class="nav-item" :class="{ active: page === 'setup' }">
+            <a href="/setup" @click.prevent="navigate('setup')" style="display:flex;align-items:center;gap:10px;flex:1;color:inherit;text-decoration:none">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span x-text="t('wm_nav_setup')"></span>
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ===== 收件箱（三栏：侧边栏 + 列表 + 预览） ===== -->
+      <template x-if="page === 'inbox'">
+        <div style="display:flex;flex:1;overflow:hidden">
+          <!-- 邮件列表 -->
+          <div class="mail-list-panel">
+            <div class="list-panel-head">
+              <h2 x-text="t('nav_inbox')"></h2>
+              <div class="right">
+                <input class="input" style="width:180px;padding:5px 10px;font-size:12px" :placeholder="t('wm_mail_search_placeholder_inbox')" x-model="inbox.search" @keydown.enter="inbox.doSearch()">
+                <button class="btn btn-sm btn-primary" @click="inbox.loadMails()" :disabled="inbox.loading" style="padding:5px 8px">
+                  <span class="spinner" x-show="inbox.loading"></span>
+                  <svg x-show="!inbox.loading" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div x-show="inbox.error" class="error-msg" style="margin:12px 16px" x-text="inbox.error"></div>
+
+            <ul class="list" x-show="!inbox.loading && inbox.mails.length > 0">
+              <template x-for="m in inbox.mails" :key="m.id">
+                <li class="list-item" :class="{ unread: !m.is_read, active: inbox.detailOpen && inbox.detail?.id === m.id }" @click="inbox.openDetail(m.id)">
+                  <div class="list-avatar" x-text="(m.from_addr || '?').slice(0,1).toUpperCase()"></div>
+                  <div class="list-main">
+                    <div class="list-row1">
+                      <span class="unread-dot" x-show="!m.is_read"></span>
+                      <span class="badge" x-show="m.status === 'rejected'" x-text="t('wm_status_rejected')"></span>
+                      <span class="addr" x-text="m.from_addr"></span>
+                      <span class="subj" x-text="inbox.subject(m.subject) || t('wm_mail_no_subject')"></span>
+                      <span class="date" x-text="inbox.date(m.created_at)"></span>
+                    </div>
+                    <div class="list-row2">
+                      <span x-text="inbox.subject(m.subject) || t('wm_mail_no_subject')"></span>
+                    </div>
+                  </div>
+                </li>
+              </template>
+            </ul>
+
+            <div class="empty" x-show="!inbox.loading && inbox.mails.length === 0 && !inbox.error">
+              <div class="em-icon">📭</div>
+              <div x-text="t('wm_mail_no_mail')"></div>
+            </div>
+            <div class="empty" x-show="inbox.loading">
+              <span class="spinner"></span>
+            </div>
+
+            <div class="pager" x-show="inbox.total > inbox.pageSize">
+              <button class="btn btn-sm" :disabled="inbox.pageNum <= 1" @click="inbox.prevPage()" x-text="t('wm_mail_prev')"></button>
+              <span x-text="inbox.pageNum + ' / ' + Math.max(1, Math.ceil(inbox.total / inbox.pageSize))"></span>
+              <button class="btn btn-sm" :disabled="inbox.pageNum >= Math.ceil(inbox.total / inbox.pageSize)" @click="inbox.nextPage()" x-text="t('wm_mail_next')"></button>
+            </div>
+          </div>
+
+          <!-- 邮件预览 -->
+          <div class="detail-panel" :class="{ 'mobile-open': inbox.detailOpen }">
+            <template x-if="!inbox.detailOpen">
+              <div class="detail-panel-empty">
+                <span x-text="t('wm_select_mail_hint')"></span>
+              </div>
+            </template>
+            <template x-if="inbox.detailOpen">
+              <div style="display:flex;flex-direction:column;height:100%">
+                <div class="detail-head">
+                  <div class="title" x-text="inbox.detail?.subject || (inbox.detailLoading ? t('wm_detail_loading') : t('wm_mail'))"></div>
+                  <div class="detail-actions" x-show="inbox.detail">
+                    <button class="btn btn-sm" @click="replyMail(inbox.detail)" x-text="t('wm_reply')"></button>
+                    <button class="btn btn-sm" @click="replyAllMail(inbox.detail)" x-text="t('wm_reply_all')"></button>
+                    <button class="btn btn-sm" @click="forwardMail(inbox.detail)" x-text="t('wm_forward')"></button>
+                  </div>
+                  <button class="close-btn" @click="inbox.closeDetail()">×</button>
+                </div>
+                <div class="detail-meta" x-show="inbox.detail">
+                  <div class="row"><span class="k" x-text="t('wm_detail_from')"></span><span class="v" x-text="inbox.detail?.from_addr"></span></div>
+                  <div class="row"><span class="k" x-text="t('wm_detail_to')"></span><span class="v" x-text="inbox.detail?.to_addr"></span></div>
+                  <div class="row" x-show="inbox.detail?.cc_addrs"><span class="k" x-text="t('wm_detail_cc')"></span><span class="v" x-text="inbox.detail?.cc_addrs"></span></div>
+                  <div class="row"><span class="k" x-text="t('wm_detail_date')"></span><span class="v" x-text="fmtFullDate(inbox.detail?.date)"></span></div>
+                  <div class="row" x-show="inbox.detail?.size_bytes"><span class="k" x-text="t('wm_detail_size')"></span><span class="v" x-text="fmtSize(inbox.detail?.size_bytes)"></span></div>
+                </div>
+                <div x-show="inbox.detailError" class="error-msg" style="margin:14px 20px" x-text="inbox.detailError"></div>
+                <div class="detail-tabs" x-show="inbox.detail">
+                  <div class="tab" :class="{ active: inbox.detailTab === 'html' }" @click="inbox.detailTab = 'html'" x-text="t('wm_detail_tab_html')"></div>
+                  <div class="tab" :class="{ active: inbox.detailTab === 'text' }" @click="inbox.detailTab = 'text'" x-text="t('wm_detail_tab_text')"></div>
+                </div>
+                <div class="detail-body" x-show="inbox.detailLoading"><span class="spinner"></span></div>
+                <div class="detail-body" x-show="inbox.detail && !inbox.detailLoading">
+                  <!-- 退信原因 - 在邮件内容上方 -->
+                  <div x-show="inbox.detail?.reject_reason" class="error-msg" style="margin-bottom:16px" x-text="t('wm_bounce_reason') + '：' + inbox.detail?.reject_reason"></div>
+                  <iframe x-show="inbox.detailTab === 'html' && inbox.detail?.body_html" :srcdoc="inbox.detail?.body_html || ''" sandbox="allow-popups" style="width:100%;height:calc(100vh - 280px);border:0"></iframe>
+                  <pre x-show="inbox.detailTab === 'text' || !inbox.detail?.body_html" x-text="inbox.detail?.body_text || ''"></pre>
+                  <!-- 附件列表 -->
+                  <div x-show="inbox.detail?.attachments && inbox.detail.attachments.length > 0" style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px" x-text="t('wm_compose_attachments')"></div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                      <template x-for="(att, idx) in (inbox.detail?.attachments || [])" :key="idx">
+                        <a class="btn btn-sm" :href="'/api/webmail/attachment?path=' + encodeURIComponent(inbox.detail?.data_path) + '&file=' + encodeURIComponent(att.filename) + '&token=' + encodeURIComponent(localStorage.getItem('webmail_token') || '')" target="_blank" style="text-decoration:none">
+                          <span x-text="att.filename"></span>
+                          <span class="muted text-xs" x-text="fmtSize(att.size)"></span>
+                        </a>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <!-- ===== 已发送（三栏：侧边栏 + 列表 + 预览） ===== -->
+      <template x-if="page === 'sent'">
+        <div style="display:flex;flex:1;overflow:hidden">
+          <div class="mail-list-panel">
+            <div class="list-panel-head">
+              <h2 x-text="t('wm_sent_title')"></h2>
+              <div class="right">
+                <input class="input" style="width:180px;padding:5px 10px;font-size:12px" :placeholder="t('wm_mail_search_placeholder_sent')" x-model="sent.search" @keydown.enter="sent.doSearch()">
+                <button class="btn btn-sm btn-primary" @click="sent.loadMails()" :disabled="sent.loading" style="padding:5px 8px">
+                  <span class="spinner" x-show="sent.loading"></span>
+                  <svg x-show="!sent.loading" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div x-show="sent.error" class="error-msg" style="margin:12px 16px" x-text="sent.error"></div>
+
+            <ul class="list" x-show="!sent.loading && sent.mails.length > 0">
+              <template x-for="m in sent.mails" :key="m.id">
+                <li class="list-item" :class="{ active: sent.detailOpen && sent.detail?.id === m.id }" @click="sent.openDetail(m.id)">
+                  <div class="list-avatar" x-text="(m.to_addr || '?').slice(0,1).toUpperCase()"></div>
+                  <div class="list-main">
+                    <div class="list-row1">
+                      <span class="badge" x-show="m.status === 'queued'" x-text="t('wm_status_queued')"></span>
+                      <span class="badge" x-show="m.status === 'delivered'" x-text="t('wm_status_delivered')"></span>
+                      <span class="badge" x-show="m.status === 'bounced'" style="background:#fef2f2;color:#b91c1c" x-text="t('wm_status_bounced')"></span>
+                      <span class="addr" x-text="m.to_addr"></span>
+                      <span class="subj" x-text="sent.subject(m.subject) || t('wm_mail_no_subject')"></span>
+                      <span class="date" x-text="sent.date(m.created_at)"></span>
+                    </div>
+                    <div class="list-row2">
+                      <span x-text="sent.subject(m.subject) || t('wm_mail_no_subject')"></span>
+                    </div>
+                  </div>
+                </li>
+              </template>
+            </ul>
+
+            <div class="empty" x-show="!sent.loading && sent.mails.length === 0 && !sent.error">
+              <div class="em-icon">📤</div>
+              <div x-text="t('wm_mail_no_mail')"></div>
+            </div>
+            <div class="empty" x-show="sent.loading"><span class="spinner"></span></div>
+
+            <div class="pager" x-show="sent.total > sent.pageSize">
+              <button class="btn btn-sm" :disabled="sent.pageNum <= 1" @click="sent.prevPage()" x-text="t('wm_mail_prev')"></button>
+              <span x-text="sent.pageNum + ' / ' + Math.max(1, Math.ceil(sent.total / sent.pageSize))"></span>
+              <button class="btn btn-sm" :disabled="sent.pageNum >= Math.ceil(sent.total / sent.pageSize)" @click="sent.nextPage()" x-text="t('wm_mail_next')"></button>
+            </div>
+          </div>
+
+          <!-- 发送详情预览 -->
+          <div class="detail-panel" :class="{ 'mobile-open': sent.detailOpen }">
+            <template x-if="!sent.detailOpen">
+              <div class="detail-panel-empty">
+                <span x-text="t('wm_select_mail_hint')"></span>
+              </div>
+            </template>
+            <template x-if="sent.detailOpen">
+              <div style="display:flex;flex-direction:column;height:100%">
+                <div class="detail-head">
+                  <div class="title" x-text="sent.detail?.subject || (sent.detailLoading ? t('wm_detail_loading') : t('wm_mail'))"></div>
+                  <div class="detail-actions" x-show="sent.detail">
+                    <button class="btn btn-sm" @click="replyMail(sent.detail)" x-text="t('wm_reply')"></button>
+                    <button class="btn btn-sm" @click="replyAllMail(sent.detail)" x-text="t('wm_reply_all')"></button>
+                    <button class="btn btn-sm" @click="forwardMail(sent.detail)" x-text="t('wm_forward')"></button>
+                  </div>
+                  <button class="close-btn" @click="sent.closeDetail()">×</button>
+                </div>
+                <div class="detail-meta" x-show="sent.detail">
+                  <div class="row"><span class="k" x-text="t('wm_detail_from')"></span><span class="v" x-text="sent.detail?.from_addr"></span></div>
+                  <div class="row"><span class="k" x-text="t('wm_detail_to')"></span><span class="v" x-text="sent.detail?.to_addr"></span></div>
+                  <div class="row" x-show="sent.detail?.cc_addrs"><span class="k" x-text="t('wm_detail_cc')"></span><span class="v" x-text="sent.detail?.cc_addrs"></span></div>
+                  <div class="row"><span class="k" x-text="t('wm_detail_date')"></span><span class="v" x-text="fmtFullDate(sent.detail?.date)"></span></div>
+                  <div class="row" x-show="sent.detail?.size_bytes"><span class="k" x-text="t('wm_detail_size')"></span><span class="v" x-text="fmtSize(sent.detail?.size_bytes)"></span></div>
+                </div>
+                <div x-show="sent.detailError" class="error-msg" style="margin:14px 20px" x-text="sent.detailError"></div>
+                <div class="detail-tabs" x-show="sent.detail">
+                  <div class="tab" :class="{ active: sent.detailTab === 'html' }" @click="sent.detailTab = 'html'" x-text="t('wm_detail_tab_html')"></div>
+                  <div class="tab" :class="{ active: sent.detailTab === 'text' }" @click="sent.detailTab = 'text'" x-text="t('wm_detail_tab_text')"></div>
+                </div>
+                <div class="detail-body" x-show="sent.detailLoading"><span class="spinner"></span></div>
+                <div class="detail-body" x-show="sent.detail && !sent.detailLoading">
+                  <!-- 退信原因 - 在邮件内容上方 -->
+                  <div x-show="sent.detail?.reject_reason" class="error-msg" style="margin-bottom:16px" x-text="t('wm_bounce_reason') + '：' + sent.detail?.reject_reason"></div>
+                  <iframe x-show="sent.detailTab === 'html' && sent.detail?.body_html" :srcdoc="sent.detail?.body_html || ''" sandbox="allow-popups" style="width:100%;height:calc(100vh - 280px);border:0"></iframe>
+                  <pre x-show="sent.detailTab === 'text' || !sent.detail?.body_html" x-text="sent.detail?.body_text || ''"></pre>
+                  <div x-show="sent.detail?.attachments && sent.detail.attachments.length > 0" style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px" x-text="t('wm_compose_attachments')"></div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                      <template x-for="(att, idx) in (sent.detail?.attachments || [])" :key="idx">
+                        <a class="btn btn-sm" :href="'/api/webmail/attachment?path=' + encodeURIComponent(sent.detail?.data_path) + '&file=' + encodeURIComponent(att.filename) + '&token=' + encodeURIComponent(localStorage.getItem('webmail_token') || '')" target="_blank" style="text-decoration:none">
+                          <span x-text="att.filename"></span>
+                          <span class="muted text-xs" x-text="fmtSize(att.size)"></span>
+                        </a>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <!-- ===== 写邮件（全屏页） ===== -->
+      <template x-if="page === 'compose'">
+        <div class="full-page">
+          <div class="full-page-head">
+            <h2 x-text="t('wm_compose_title')"></h2>
+          </div>
+          <div class="full-page-body">
+            <form class="compose-form" @submit.prevent="sendMail()">
+              <div class="error-msg" x-show="composeError" x-text="composeError"></div>
+              <div class="error-msg" x-show="canSend === false" x-text="t('wm_protocol_smtp_send_disabled')"></div>
+              <div class="field" style="position:relative">
+                <label x-text="t('wm_compose_to')"></label> <span class="muted text-xs" x-text="t('wm_compose_to_hint')"></span>
+                <input class="input" type="text" x-model="composeTo" @input="onComposeInput('to')" placeholder="user1@example.com, user2@example.com" required>
+                <div x-show="autocompleteList.length > 0 && autocompleteTarget === 'to'" class="autocomplete-dropdown">
+                  <template x-for="c in autocompleteList" :key="c.id">
+                    <div class="autocomplete-item" @click="pickAutocomplete(c)" @mousedown.prevent>
+                      <span x-text="c.name || c.email"></span>
+                      <span class="muted text-xs" x-text="c.email"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+              <div class="field" style="position:relative">
+                <label x-text="t('wm_compose_cc')"></label>
+                <input class="input" type="text" x-model="composeCc" @input="onComposeInput('cc')" :placeholder="t('wm_compose_cc_placeholder')">
+                <div x-show="autocompleteList.length > 0 && autocompleteTarget === 'cc'" class="autocomplete-dropdown">
+                  <template x-for="c in autocompleteList" :key="c.id">
+                    <div class="autocomplete-item" @click="pickAutocomplete(c)" @mousedown.prevent>
+                      <span x-text="c.name || c.email"></span>
+                      <span class="muted text-xs" x-text="c.email"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+              <div class="field">
+                <label x-text="t('wm_compose_subject')"></label>
+                <input class="input" type="text" x-model="composeSubject" :placeholder="t('wm_compose_subject_placeholder')" required>
+              </div>
+              <div class="field">
+                <label x-text="t('wm_compose_body')"></label> <span class="muted text-xs" x-text="t('wm_compose_body_hint')"></span>
+                <textarea class="textarea" x-model="composeBody" :placeholder="t('wm_compose_body_placeholder')" required></textarea>
+              </div>
+
+              <!-- 附件上传 -->
+              <div class="field">
+                <div class="flex items-center justify-between" style="margin-bottom:6px">
+                  <label x-text="t('wm_compose_attachments')"></label>
+                  <span class="text-xs muted" x-show="composeAttachments.length > 0" x-text="composeAttachments.length + ' ' + t('wm_files') + ' · ' + formatSize(composeAttachments.reduce((s,a)=>s+(a.size||0),0))"></span>
+                </div>
+                <label class="upload-dropzone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;border:2px dashed var(--border,#ddd);border-radius:10px;cursor:pointer;transition:all .15s;color:var(--text-muted,#888);font-size:13px">
+                  <svg style="width:28px;height:28px;margin-bottom:6px;opacity:.6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                  <span x-text="t('wm_compose_upload_hint')"></span>
+                  <input type="file" multiple @change="onFileSelect($event)" style="display:none">
+                </label>
+                <div x-show="composeAttachments.length > 0" style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+                  <template x-for="(att, idx) in composeAttachments" :key="idx">
+                    <div class="attach-card" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;transition:border-color .15s">
+                      <span class="attach-icon" x-text="fileIcon(att.content_type)" style="font-size:10px;font-weight:700;color:#fff;background:var(--primary);padding:3px 6px;border-radius:4px;letter-spacing:.5px;min-width:32px;text-align:center"></span>
+                      <div class="flex-1 min-w-0">
+                        <div class="truncate text-sm" style="font-weight:500" x-text="att.filename"></div>
+                        <div class="text-xs muted" x-text="formatSize(att.size)"></div>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:0">
+                        <button type="button" class="sort-btn" @click="moveAttachment(idx, -1)" :disabled="idx === 0" style="border:none;background:none;cursor:pointer;padding:0 4px;color:var(--text-muted);font-size:12px;line-height:1" :style="idx === 0 ? 'opacity:.3;cursor:default' : ''">▲</button>
+                        <button type="button" class="sort-btn" @click="moveAttachment(idx, 1)" :disabled="idx === composeAttachments.length - 1" style="border:none;background:none;cursor:pointer;padding:0 4px;color:var(--text-muted);font-size:12px;line-height:1" :style="idx === composeAttachments.length - 1 ? 'opacity:.3;cursor:default' : ''">▼</button>
+                      </div>
+                      <button type="button" @click="removeAttachment(idx)" style="border:none;background:none;cursor:pointer;color:var(--danger);font-size:18px;padding:0 4px;line-height:1">×</button>
+                    </div>
+                  </template>
+                </div>
+              </div>
+              <div class="flex gap-2" style="justify-content:flex-end">
+                <button type="button" class="btn" @click="composeTo='';composeCc='';composeSubject='';composeBody=''" x-text="t('clear')"></button>
+                <button type="submit" class="btn btn-primary" :disabled="composeSending || canSend === false">
+                  <span class="spinner" x-show="composeSending"></span>
+                  <span x-text="composeSending ? t('wm_compose_sending') : (canSend === false ? t('wm_compose_smtp_disabled') : t('wm_compose_send'))"></span>
+                </button>
+              </div>
+              <div class="text-right text-sm" style="color:var(--success)" x-show="composeSent" x-text="t('wm_compose_sent_msg')"></div>
+            </form>
+          </div>
+        </div>
+      </template>
+
+      <!-- ===== 搜索结果（全屏页） ===== -->
+      <template x-if="page === 'search'">
+        <div class="full-page">
+          <div class="full-page-head">
+            <h2 x-text="t('wm_search_results') + ': ' + searchKeyword"></h2>
+            <div class="right">
+              <button class="btn btn-sm" @click="clearSearch()" x-text="t('close')"></button>
+            </div>
+          </div>
+          <div class="full-page-body">
+            <div class="empty" x-show="searchLoading"><span class="spinner"></span></div>
+            <div class="empty" x-show="!searchLoading && (!searchResults || searchResults.length === 0)" x-text="t('wm_mail_no_mail')"></div>
+            <ul class="list" x-show="!searchLoading && searchResults && searchResults.length > 0">
+              <template x-for="m in searchResults" :key="m.id">
+                <li class="list-item" @click="(m._source === 'sent' ? sent : inbox).openDetail(m.id)">
+                  <div class="list-avatar" x-text="(m.from_addr || '?').slice(0,1).toUpperCase()"></div>
+                  <div class="list-main">
+                    <div class="list-row1">
+                      <span class="badge" x-show="m._source === 'sent'" x-text="t('nav_sent')"></span>
+                      <span class="badge" x-show="m._source === 'inbox'" x-text="t('nav_inbox')"></span>
+                      <span class="subj" x-text="decodeSubject(m.subject) || t('wm_mail_no_subject')"></span>
+                      <span class="date" x-text="fmtDate(m.created_at)"></span>
+                    </div>
+                    <div class="list-row2">
+                      <span x-text="m.from_addr"></span>
+                      <span x-text="(m.to_addr || '') + ' · ' + fmtSize(m.size_bytes)"></span>
+                    </div>
+                  </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </div>
+      </template>
+
+      <!-- ===== 联系人（全屏页） ===== -->
+      <template x-if="page === 'contacts'">
+        <div class="full-page">
+          <div class="full-page-head">
+            <h2 x-text="t('wm_nav_contacts')"></h2>
+            <div class="right">
+              <button class="btn btn-sm btn-primary" @click="openContactModal()" x-text="t('wm_contacts_add')"></button>
+            </div>
+          </div>
+          <div class="full-page-body" style="padding:0">
+            <div class="empty" x-show="contactsLoading"><span class="spinner"></span></div>
+            <div class="empty" x-show="!contactsLoading && contacts.length === 0" x-text="t('wm_contacts_empty')"></div>
+            <ul class="list" x-show="!contactsLoading && contacts.length > 0">
+              <template x-for="c in contacts" :key="c.id">
+                <li class="list-item" style="cursor:default">
+                  <div class="list-avatar" x-text="(c.name || c.email).slice(0,1).toUpperCase()"></div>
+                  <div class="list-main">
+                    <div class="list-row1">
+                      <span class="subj" style="font-weight:600;color:var(--text)" x-text="c.name || c.email"></span>
+                    </div>
+                    <div class="list-row2">
+                      <span x-text="c.email"></span>
+                      <span x-text="c.notes || ''"></span>
+                    </div>
+                  </div>
+                  <div class="list-actions" style="display:flex;gap:4px">
+                    <button class="btn btn-sm" @click="composeTo = c.email; navigate('compose')" x-text="t('wm_compose_send')"></button>
+                    <button class="btn btn-sm" @click="openContactModal(c)" x-text="t('edit')"></button>
+                    <button class="btn btn-sm" @click="deleteContact(c.id)" x-text="t('delete')" style="color:var(--danger)"></button>
+                  </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+
+          <!-- 联系人编辑弹窗 -->
+          <div class="modal-mask" x-show="contactModalOpen" @click.self="contactModalOpen = false">
+            <div class="modal" style="max-width:440px">
+              <div class="modal-head">
+                <div class="title" x-text="contactForm.id ? t('wm_contacts_edit') : t('wm_contacts_add')"></div>
+                <button class="close" @click="contactModalOpen = false">×</button>
+              </div>
+              <div class="modal-body">
+                <div class="field">
+                  <label x-text="t('wm_contacts_name')"></label>
+                  <input class="input" x-model="contactForm.name">
+                </div>
+                <div class="field">
+                  <label x-text="t('wm_contacts_email')"></label>
+                  <input class="input" x-model="contactForm.email" required>
+                </div>
+                <div class="field">
+                  <label x-text="t('wm_contacts_notes')"></label>
+                  <textarea class="textarea" x-model="contactForm.notes" rows="3"></textarea>
+                </div>
+              </div>
+              <div class="modal-foot">
+                <button class="btn" @click="contactModalOpen = false" x-text="t('cancel')"></button>
+                <button class="btn btn-primary" @click="saveContact()" x-text="t('save')"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ===== 接入设置（全屏页） ===== -->
+      <template x-if="page === 'setup'">
+        <div class="full-page">
+          <div class="full-page-head">
+            <h2 x-text="t('wm_setup_title')"></h2>
+          </div>
+          <div class="full-page-body">
+            <div class="setup-page">
+              <p class="text-sm mb-3" style="color:var(--text-muted)" x-text="t('wm_setup_desc')"></p>
+
+              <!-- 账户信息 -->
+              <div class="setup-card">
+                <div class="setup-card-title" x-text="t('wm_setup_account_info')"></div>
+                <div class="setup-row">
+                  <span x-text="t('wm_setup_email_addr')"></span>
+                  <span class="setup-val" x-text="user?.email"></span>
+                </div>
+                <div class="setup-row">
+                  <span x-text="t('wm_setup_username')"></span>
+                  <span class="setup-val" x-text="user?.email"></span>
+                </div>
+                <div class="setup-row">
+                  <span x-text="t('wm_setup_password')"></span>
+                  <span class="setup-val" x-text="t('wm_setup_password_val')"></span>
+                </div>
+              </div>
+
+              <!-- SMTP 发件 -->
+              <div class="setup-card" x-show="smtpAllowed">
+                <div class="setup-card-title" style="color:var(--success)" x-text="t('wm_setup_smtp_title')"></div>
+                <div class="setup-row"><span x-text="t('wm_setup_server')"></span><span class="setup-val" x-text="setupInfo.smtp_host"></span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_ssl_port')"></span><span class="setup-val" style="font-weight:600">465</span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_starttls_port')"></span><span class="setup-val">587 / 25</span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_encryption')"></span><span class="setup-val" x-text="t('wm_setup_smtp_encryption_val')"></span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_auth')"></span><span class="setup-val" x-text="t('wm_setup_auth_val')"></span></div>
+                <div class="setup-note" x-text="t('wm_setup_smtp_note')"></div>
+              </div>
+              <div class="setup-card setup-card-disabled" x-show="!smtpAllowed">
+                <div class="setup-card-title" style="color:var(--text-muted)" x-text="t('wm_setup_smtp_title')"></div>
+                <div class="setup-note" x-text="t('wm_setup_smtp_disabled')"></div>
+              </div>
+
+              <!-- POP3 收件 -->
+              <div class="setup-card" x-show="pop3Allowed">
+                <div class="setup-card-title" style="color:var(--primary)" x-text="t('wm_setup_pop3_title')"></div>
+                <div class="setup-row"><span x-text="t('wm_setup_server')"></span><span class="setup-val" x-text="setupInfo.pop3_host"></span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_ssl_port')"></span><span class="setup-val" style="font-weight:600">995</span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_starttls_port')"></span><span class="setup-val">110</span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_encryption')"></span><span class="setup-val" x-text="t('wm_setup_pop3_encryption_val')"></span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_auth')"></span><span class="setup-val" x-text="t('wm_setup_auth_val')"></span></div>
+                <div class="setup-note" x-text="t('wm_setup_pop3_note')"></div>
+              </div>
+              <div class="setup-card setup-card-disabled" x-show="!pop3Allowed">
+                <div class="setup-card-title" style="color:var(--text-muted)" x-text="t('wm_setup_pop3_title')"></div>
+                <div class="setup-note" x-text="t('wm_setup_pop3_disabled')"></div>
+              </div>
+
+              <!-- IMAP 收件 -->
+              <div class="setup-card" x-show="imapAllowed">
+                <div class="setup-card-title" style="color:#7c3aed" x-text="t('wm_setup_imap_title')"></div>
+                <div class="setup-row"><span x-text="t('wm_setup_server')"></span><span class="setup-val" x-text="setupInfo.imap_host"></span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_ssl_port')"></span><span class="setup-val" style="font-weight:600">993</span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_starttls_port')"></span><span class="setup-val">143</span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_encryption')"></span><span class="setup-val" x-text="t('wm_setup_imap_encryption_val')"></span></div>
+                <div class="setup-row"><span x-text="t('wm_setup_auth')"></span><span class="setup-val" x-text="t('wm_setup_auth_val')"></span></div>
+                <div class="setup-note" x-text="t('wm_setup_imap_note')"></div>
+              </div>
+              <div class="setup-card setup-card-disabled" x-show="!imapAllowed">
+                <div class="setup-card-title" style="color:var(--text-muted)" x-text="t('wm_setup_imap_title')"></div>
+                <div class="setup-note" x-text="t('wm_setup_imap_disabled')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+[package]
+name = "funmail-pop3"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+funmail-common = { workspace = true }
+tokio = { workspace = true }
+sqlx = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+mail-parser = { workspace = true }
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+chrono = { workspace = true }

@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/">
+  <title x-text="t('loginTitle')">FunMail</title>
+  <link rel="icon" type="image/png" href="/src/static/images/logo.png">
+  <style type="text/tailwindcss">@import "tailwindcss";</style>
+  <link rel="stylesheet" href="src/custom.css">
+  <style>
+    [x-cloak] { display: none !important; }
+    :root {
+      --bg-body: #f3f4f6; --bg-card: #ffffff; --bg-sidebar: #ffffff;
+      --bg-input: #ffffff; --bg-header: #ffffff; --bg-hover: #eff6ff;
+      --bg-table-head: #f9fafb; --bg-table-hover: rgba(239,246,255,0.4);
+      --bg-tab: #f3f4f6; --bg-tab-active: #ffffff;
+      --border: #e5e7eb; --border-light: #f3f4f6;
+      --text-primary: #111827; --text-secondary: #6b7280;
+      --text-muted: #9ca3af; --text-label: #374151; --shadow-card: none;
+      --accent: #3b82f6;
+    }
+    .dark {
+      --bg-body: rgb(24, 24, 24); --bg-card: rgb(39, 39, 39); --bg-sidebar: rgb(39, 39, 39);
+      --bg-input: rgb(57, 57, 57); --bg-header: rgb(39, 39, 39); --bg-hover: rgb(50, 50, 50);
+      --bg-table-head: rgb(39, 39, 39); --bg-table-hover: rgba(255,255,255,0.04);
+      --bg-tab: rgb(50, 50, 50); --bg-tab-active: rgb(39, 39, 39);
+      --border: rgb(57, 57, 57); --border-light: rgb(39, 39, 39);
+      --text-primary: rgb(230, 230, 230); --text-secondary: rgb(160, 160, 160);
+      --text-muted: rgb(110, 110, 110); --text-label: rgb(200, 200, 200);
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.4);
+      --accent: #60a5fa;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+    .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+    * { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.12) transparent; }
+    .dark * { scrollbar-color: rgba(255,255,255,0.12) transparent; }
+    .dark .badge-success { background: rgba(20,83,45,0.5) !important; color: #86efac !important; }
+    .dark .badge-danger { background: rgba(127,29,29,0.5) !important; color: #fca5a5 !important; }
+    .dark .badge-warning { background: rgba(113,63,18,0.5) !important; color: #fde68a !important; }
+    .dark .badge-info { background: rgba(30,58,138,0.5) !important; color: #93c5fd !important; }
+    .dark .bg-white { background: rgb(39,39,39) !important; }
+    .dark .bg-gray-50, .dark .bg-gray-100 { background: rgb(24,24,24) !important; }
+    .dark .text-gray-900, .dark .text-gray-800 { color: rgb(230,230,230) !important; }
+    .dark .text-gray-700, .dark .text-gray-600 { color: rgb(200,200,200) !important; }
+    .dark .text-gray-500 { color: rgb(160,160,160) !important; }
+    .dark .text-gray-400 { color: rgb(110,110,110) !important; }
+    .dark .border-gray-100, .dark .border-gray-200 { border-color: rgb(57,57,57) !important; }
+    .dark .border-gray-300 { border-color: rgb(80,80,80) !important; }
+    .dark select option { background: rgb(39,39,39); color: rgb(230,230,230); }
+    .dark textarea { background-color: rgb(57,57,57) !important; color: rgb(230,230,230) !important; border-color: rgb(57,57,57) !important; }
+    .dark .input { background-color: rgb(57,57,57) !important; color: rgb(230,230,230) !important; border-color: rgb(57,57,57) !important; }
+    .dark select { background-color: rgb(57,57,57) !important; color: rgb(230,230,230) !important; border-color: rgb(57,57,57) !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0a0a0' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: right 10px center !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; padding-right: 32px !important; }
+    .dark input[type="file"] { color: var(--text-secondary); }
+    .dark .stat-card { background: rgb(39,39,39) !important; border-color: rgb(57,57,57) !important; }
+    .dark .stat-value.text-red-600 { color: #f87171 !important; }
+    .dark .stat-value.text-green-600 { color: #34d399 !important; }
+    .dark .stat-value.text-blue-600 { color: #60a5fa !important; }
+    .dark .stat-value.text-yellow-600 { color: #fbbf24 !important; }
+    .dark .stat-value.text-purple-600 { color: #c084fc !important; }
+    .dark .stat-value.text-orange-600 { color: #fb923c !important; }
+    .dark .stat-label { color: rgb(110,110,110) !important; }
+    .dark .card { background: rgb(39,39,39) !important; border-color: rgb(57,57,57) !important; }
+    .dark .card-header { color: rgb(230,230,230) !important; border-color: rgb(57,57,57) !important; }
+    .dark .card-body { color: rgb(200,200,200) !important; }
+    .dark .table th { background: rgb(30,30,30) !important; color: rgb(160,160,160) !important; border-color: rgb(57,57,57) !important; }
+    .dark .table td { color: rgb(200,200,200) !important; border-color: rgb(50,50,50) !important; }
+    .dark .table tbody tr:hover td { background: rgba(255,255,255,0.03) !important; }
+    .dark .btn-secondary { background: rgb(39,39,39) !important; color: rgb(200,200,200) !important; border-color: rgb(80,80,80) !important; }
+    .dark .btn-secondary:hover { background: rgb(50,50,50) !important; border-color: rgb(120,120,120) !important; }
+    .tab-active { background: var(--bg-tab-active) !important; color: #3b82f6 !important; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .tab-inactive { color: var(--text-secondary) !important; }
+    .tab-inactive:hover { color: var(--text-primary) !important; background: rgba(255,255,255,0.5); }
+    .dark .tab-active { background: rgb(39,39,39) !important; color: #60a5fa !important; }
+    .dark .tab-inactive { color: rgb(140,140,140) !important; }
+    .dark .label { color: rgb(200,200,200) !important; }
+    .dark .sidebar-link { color: rgb(160,160,160) !important; }
+    .dark .sidebar-link:hover { background: rgb(50,50,50) !important; color: rgb(230,230,230) !important; }
+    .dark .sidebar-link.active { background: rgb(50,50,50) !important; color: rgb(96,165,250) !important; }
+    .dark [style*="background:var(--bg-card)"] { background: rgb(39,39,39) !important; }
+    .dark [style*="background:var(--bg-sidebar)"] { background: rgb(39,39,39) !important; }
+    .dark [style*="background:var(--bg-header)"] { background: rgb(39,39,39) !important; }
+    .dark [style*="background:var(--bg-body)"] { background: rgb(24,24,24) !important; }
+    .dark input[type="date"], .dark input[type="time"] { color-scheme: dark; }
+    .dark .text-blue-600 { color: rgb(96,165,250) !important; }
+    /* 只读用户隐藏写操作按钮 */
+    [data-viewer="true"] .btn-primary, [data-viewer="true"] .btn-danger, [data-viewer="true"] .btn-write { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
+    .viewer-banner { background: #fef3c7; color: #92400e; padding: 6px 16px; font-size: 13px; text-align: center; }
+    .dark .viewer-banner { background: #422006; color: #fbbf24; }
+    .dark .text-blue-700 { color: rgb(147,197,253) !important; }
+    .dark .text-blue-500 { color: rgb(59,130,246) !important; }
+    .dark .text-emerald-600 { color: rgb(52,211,153) !important; }
+    .dark .text-red-600 { color: rgb(252,165,165) !important; }
+    .dark .text-amber-600 { color: rgb(253,224,71) !important; }
+    .dark .text-yellow-600 { color: rgb(253,224,71) !important; }
+    .dark .text-green-600 { color: rgb(52,211,153) !important; }
+    .dark .text-purple-600 { color: rgb(192,132,252) !important; }
+    .dark .text-orange-600 { color: rgb(251,146,60) !important; }
+    .dark .bg-blue-50, .dark .bg-blue-100 { background: rgba(30,58,138,0.3) !important; }
+    .dark .border-blue-200 { border-color: rgba(59,130,246,0.3) !important; }
+    .dark .bg-red-100 { background: rgba(127,29,29,0.4) !important; }
+    .dark .bg-amber-100 { background: rgba(113,63,18,0.4) !important; }
+    .dark .bg-green-100 { background: rgba(20,83,45,0.4) !important; }
+    .dark .bg-yellow-100 { background: rgba(113,63,18,0.4) !important; }
+    .dark .text-blue-600.font-semibold, .dark .text-blue-700.font-semibold { color: rgb(147,197,253) !important; }
+    .dark .text-blue-800 { color: rgb(191,219,254) !important; }
+    .dark .bg-blue-500 { background: rgb(37,99,235) !important; }
+    .dark .hover\:bg-blue-50:hover, .dark .hover\:bg-blue-50\/50:hover { background: rgba(30,58,138,0.3) !important; }
+    .dark .hover\:text-blue-600:hover, .dark .hover\:text-blue-700:hover { color: rgb(147,197,253) !important; }
+    .dark .hover\:border-blue-300:hover { border-color: rgba(96,165,250,0.5) !important; }
+    .dark .hover\:bg-blue-600:hover { background: rgb(29,78,216) !important; }
+    .dark .text-red-500 { color: rgb(248,113,113) !important; }
+    .dark .hover\:text-red-700:hover { color: rgb(252,165,165) !important; }
+  </style>
+</head>
+<body class="min-h-screen" :class="darkMode ? 'dark' : ''" style="background:var(--bg-body)" x-data="app()" x-init="init()" @popstate.window="onRouteChange()" @toast.window="showToast($event.detail.msg, $event.detail.type)" x-cloak>
+
+  <!-- Login Page -->
+  <div x-show="page === 'login'" class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="card w-full max-w-sm p-8">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center mb-4">
+          <img src="/src/static/images/logo2.png" class="h-12" alt="FunMail">
+        </div>
+        <p class="text-sm text-gray-500 mt-1" x-text="t('admin_console')"></p>
+      </div>
+      <form @submit.prevent="doLogin()">
+        <div class="mb-4">
+          <label class="label" x-text="t('username')"></label>
+          <input x-model="loginUser" type="text" class="input" :placeholder="t('username')" autocomplete="username">
+        </div>
+        <div class="mb-6">
+          <label class="label" x-text="t('password')"></label>
+          <input x-model="loginPass" type="password" class="input" :placeholder="t('password')" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary w-full" :disabled="loginLoading">
+          <span x-show="!loginLoading" x-text="t('loginBtn')"></span>
+          <span x-show="loginLoading" x-text="t('loading')"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div x-show="page !== 'login'" class="flex flex-col h-screen" :data-viewer="isViewer">
+    <!-- 只读用户横幅（非 fixed，作为 flex 行，不遮挡其他元素） -->
+    <div x-show="isViewer" class="viewer-banner shrink-0" x-text="t('viewer_banner')"></div>
+    <div class="flex flex-1 min-h-0">
+    <!-- Sidebar -->
+    <aside class="w-56 flex flex-col shrink-0" style="background:var(--bg-sidebar);border-right:1px solid var(--border)">
+      <div class="px-5 py-4" style="border-bottom:1px solid var(--border-light)">
+        <div class="flex items-center gap-2.5">
+          <img src="/src/static/images/logo2.png" class="h-7" alt="FunMail">
+        </div>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        <a href="/dashboard" @click.prevent="navigate('/dashboard')" :class="page === 'dashboard' ? 'sidebar-link active' : 'sidebar-link'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <span x-text="t('nav_dashboard')"></span>
+        </a>
+        <a href="/domains" @click.prevent="navigate('/domains')" :class="page === 'domains' ? 'sidebar-link active' : 'sidebar-link'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          <span x-text="t('nav_domains')"></span>
+        </a>
+        <a href="/mailboxes" @click.prevent="navigate('/mailboxes')" :class="page === 'mailboxes' ? 'sidebar-link active' : 'sidebar-link'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span x-text="t('nav_mailboxes')"></span>
+        </a>
+        <!-- 邮件管理（可折叠） -->
+        <div>
+          <button @click="mailMenuOpen = !mailMenuOpen" :class="['inbox','sent','compose','queue'].includes(page) ? 'sidebar-link active w-full' : 'sidebar-link w-full'" style="justify-content:space-between">
+            <span class="flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span x-text="t('nav_mail')"></span>
+            </span>
+            <svg class="w-4 h-4 transition-transform" :class="mailMenuOpen || ['inbox','sent','compose','queue'].includes(page) ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+          <div x-show="mailMenuOpen || ['inbox','sent','compose','queue'].includes(page)" x-transition class="ml-4 space-y-1 mt-1">
+            <a href="/inbox" @click.prevent="navigate('/inbox')" :class="page === 'inbox' ? 'sidebar-link active' : 'sidebar-link'">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+              <span x-text="t('nav_inbox')"></span>
+            </a>
+            <a href="/sent" @click.prevent="navigate('/sent')" :class="page === 'sent' ? 'sidebar-link active' : 'sidebar-link'">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              <span x-text="t('nav_sent')"></span>
+            </a>
+            <a href="/compose" @click.prevent="navigate('/compose')" :class="page === 'compose' ? 'sidebar-link active' : 'sidebar-link'">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span x-text="t('nav_compose')"></span>
+            </a>
+            <a href="/queue" @click.prevent="navigate('/queue')" :class="page === 'queue' ? 'sidebar-link active' : 'sidebar-link'">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              <span x-text="t('nav_queue')"></span>
+            </a>
+          </div>
+        </div>
+        <a href="/certs" @click.prevent="navigate('/certs')" :class="page === 'certs' ? 'sidebar-link active' : 'sidebar-link'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          <span x-text="t('nav_certs')"></span>
+        </a>
+        <a href="/logs" @click.prevent="navigate('/logs')" :class="page === 'logs' ? 'sidebar-link active' : 'sidebar-link'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span x-text="t('nav_logs')"></span>
+        </a>
+        <a href="/settings" @click.prevent="navigate('/settings')" :class="page === 'settings' ? 'sidebar-link active' : 'sidebar-link'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span x-text="t('nav_settings')"></span>
+        </a>
+        <a href="/accounts" @click.prevent="navigate('/accounts')" :class="page === 'accounts' ? 'sidebar-link active' : 'sidebar-link'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <span x-text="t('nav_accounts')"></span>
+        </a>
+      </nav>
+      <div class="px-3 py-3" style="border-top:1px solid var(--border-light)">
+        <div class="text-xs text-center" style="color:var(--text-muted)" x-text="'FunMail v' + appVersion"></div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Header -->
+      <header class="h-12 flex items-center justify-between px-6 shrink-0" style="background:var(--bg-header);border-bottom:1px solid var(--border)">
+        <h2 class="text-sm font-medium" style="color:var(--text-primary)" x-text="pageTitle"></h2>
+        <div class="flex items-center gap-3">
+          <button @click="toggleDark()" class="p-1.5 rounded-lg hover:bg-gray-100" style="color:var(--text-secondary)">
+            <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <svg x-show="darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </button>
+          <div class="relative" @click.outside="langOpen = false">
+            <button @click="langOpen = !langOpen" class="text-xs px-2 py-1 rounded border flex items-center gap-1 hover:opacity-80 transition-colors" style="color:var(--text-secondary);border-color:var(--border);cursor:pointer;background:none">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+              <span x-text="lang === 'zh' ? t('lang_zh') : t('lang_en')"></span>
+              <svg class="w-3 h-3 transition-transform" :class="langOpen ? 'rotate-180' : ''" :style="langOpen ? 'transform:rotate(180deg)' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div x-show="langOpen" x-transition.opacity.duration.150ms class="absolute right-0 mt-1 py-1 rounded-md shadow-lg z-50" style="background:var(--bg-card);border:1px solid var(--border);min-width:110px;top:100%">
+              <button @click="switchLang('zh'); langOpen = false" class="block w-full text-left px-3 py-1.5 text-xs transition-colors rounded" style="color:var(--text-secondary)" :class="lang === 'zh' ? 'font-semibold' : ''" :style="lang === 'zh' ? 'color:var(--text-primary);background:var(--bg-hover, rgba(0,0,0,0.04))' : ''" x-text="t('lang_zh')"></button>
+              <button @click="switchLang('en'); langOpen = false" class="block w-full text-left px-3 py-1.5 text-xs transition-colors rounded" style="color:var(--text-secondary)" :class="lang === 'en' ? 'font-semibold' : ''" :style="lang === 'en' ? 'color:var(--text-primary);background:var(--bg-hover, rgba(0,0,0,0.04))' : ''" x-text="t('lang_en')"></button>
+            </div>
+          </div>
+          <span class="text-xs" style="color:var(--text-muted)" x-text="username"></span>
+          <button @click="doLogout()" class="text-xs text-red-500 hover:text-red-700" x-text="t('logout')"></button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="flex-1 overflow-auto p-6">
+
+        <!-- Dashboard -->
+        <div x-show="page === 'dashboard'" x-data="pageMixins.dashboard" x-init="init(); loadDashboard()" @page-change.window="if($event.detail.page==='dashboard'){loadDashboard();setTimeout(()=>resizeCharts(),80)}">
+          <div class="grid grid-cols-5 gap-4 mb-6">
+            <div class="stat-card">
+              <div class="stat-value text-blue-600" x-text="stats.total_inbound"></div>
+              <div class="stat-label" x-text="t('dashboard_inbound_total')"></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value text-green-600" x-text="stats.total_outbound"></div>
+              <div class="stat-label" x-text="t('dashboard_outbound_total')"></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value text-red-600" x-text="stats.total_spam"></div>
+              <div class="stat-label" x-text="t('dashboard_spam_total')"></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value text-yellow-600" x-text="stats.active_domains"></div>
+              <div class="stat-label" x-text="t('dashboard_active_domains')"></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value text-purple-600" x-text="stats.active_mailboxes"></div>
+              <div class="stat-label" x-text="t('dashboard_active_mailboxes')"></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="card">
+              <div class="card-header" x-text="t('dashboard_traffic_trend')"></div>
+              <div class="card-body"><div id="traffic-chart" style="height:280px"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-header" x-text="t('dashboard_queue_status')"></div>
+              <div class="card-body"><div id="queue-chart" style="height:280px"></div></div>
+            </div>
+          </div>
+          <div class="card mb-6">
+            <div class="card-header" x-text="t('dashboard_30d_trend')"></div>
+            <div class="card-body"><div id="traffic30d-chart" style="height:300px"></div></div>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="stat-card">
+              <div class="stat-value text-orange-600" x-text="stats.total_bounced"></div>
+              <div class="stat-label" x-text="t('dashboard_bounced_total')"></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value text-cyan-600" x-text="stats.queue_pending"></div>
+              <div class="stat-label" x-text="t('dashboard_queue_pending')"></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value text-amber-600" x-text="stats.queue_deferred"></div>
+              <div class="stat-label" x-text="t('dashboard_queue_deferred')"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Domains -->
+        <div x-show="page === 'domains'" x-data="pageMixins.domains" x-init="init(); loadDomains()" @page-change.window="if($event.detail.page==='domains')loadDomains()">
+          <!-- DNS 设置向导弹窗 -->
+          <div x-show="showWizard" x-cloak class="fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+            <div class="w-full max-w-3xl mx-4 rounded-xl shadow-2xl overflow-hidden" style="background:var(--bg-card);max-height:90vh;overflow-y:auto">
+              <!-- 向导头部 -->
+              <div class="px-6 py-4 flex items-center justify-between" style="border-bottom:1px solid var(--border)">
+                <div>
+                  <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('domains_setup_wizard')"></h3>
+                  <p class="text-sm mt-0.5" style="color:var(--text-secondary)" x-text="wizardDomain ? wizardDomain.name : ''"></p>
+                </div>
+                <button @click="closeWizard()" class="p-1 rounded hover:opacity-70" style="color:var(--text-secondary)">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <!-- 步骤指示器 -->
+              <div class="px-6 py-3 flex items-center gap-2" style="border-bottom:1px solid var(--border-light);background:var(--bg-table-head)">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" :style="wizardStep >= 1 ? 'background:var(--accent);color:#fff' : 'background:var(--bg-input);color:var(--text-muted)'">1</span>
+                  <span class="text-sm" :style="wizardStep >= 1 ? 'color:var(--text-primary)' : 'color:var(--text-muted)'" x-text="t('domains_wizard_dns')"></span>
+                </div>
+                <div class="flex-1 h-px" style="background:var(--border)"></div>
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" :style="wizardStep >= 2 ? 'background:var(--accent);color:#fff' : 'background:var(--bg-input);color:var(--text-muted)'">2</span>
+                  <span class="text-sm" :style="wizardStep >= 2 ? 'color:var(--text-primary)' : 'color:var(--text-muted)'" x-text="t('domains_wizard_verify')"></span>
+                </div>
+                <div class="flex-1 h-px" style="background:var(--border)"></div>
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" :style="wizardStep >= 3 ? 'background:var(--accent);color:#fff' : 'background:var(--bg-input);color:var(--text-muted)'">3</span>
+                  <span class="text-sm" :style="wizardStep >= 3 ? 'color:var(--text-primary)' : 'color:var(--text-muted)'" x-text="t('domains_wizard_cert')"></span>
+                </div>
+                <div class="flex-1 h-px" style="background:var(--border)"></div>
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" :style="wizardStep >= 4 ? 'background:var(--accent);color:#fff' : 'background:var(--bg-input);color:var(--text-muted)'">4</span>
+                  <span class="text-sm" :style="wizardStep >= 4 ? 'color:var(--text-primary)' : 'color:var(--text-muted)'" x-text="t('domains_wizard_done')"></span>
+                </div>
+              </div>
+
+              <!-- 步骤1&2：DNS 记录列表 -->
+              <div x-show="wizardStep <= 2" class="p-6">
+                <!-- 加载状态 -->
+                <div x-show="guideLoading" class="flex flex-col items-center justify-center py-12">
+                  <svg class="w-8 h-8 animate-spin mb-4" style="color:var(--accent)" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                  <p class="text-sm" style="color:var(--text-secondary)" x-text="t('domains_loading_dns')"></p>
+                </div>
+                <!-- DNS 记录内容 -->
+                <div x-show="!guideLoading">
+                  <div class="mb-4 p-3 rounded-lg" style="background:var(--bg-hover)">
+                    <p class="text-sm" style="color:var(--text-secondary)">
+                      <span x-text="t('domains_dns_add_records')"></span> <strong x-text="serverIp" style="color:var(--text-primary)"></strong>
+                    </p>
+                  </div>
+                  <!-- 必须记录 -->
+                  <div class="mb-2">
+                    <h4 class="text-sm font-semibold mb-2" style="color:var(--text-primary)" x-text="t('required')"></h4>
+                  </div>
+                  <div class="space-y-2">
+                  <template x-for="(r, i) in dnsRecords.filter(x => x.required)" :key="'req-'+i">
+                    <div class="flex items-center gap-3 p-3 rounded-lg" style="background:var(--bg-body);border:1px solid var(--border-light)">
+                      <div class="shrink-0">
+                        <svg x-show="r.verified" class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <svg x-show="!r.verified" class="w-5 h-5" style="color:var(--text-muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="px-1.5 py-0.5 rounded text-xs font-bold" :style="r.record_type === 'A' ? 'background:#dbeafe;color:#1d4ed8' : r.record_type === 'MX' ? 'background:#fef3c7;color:#92400e' : 'background:#d1fae5;color:#065f46'" x-text="r.record_type"></span>
+                          <span class="text-sm font-medium truncate" style="color:var(--text-primary)" x-text="r.host"></span>
+                          <span x-show="r.priority" class="text-xs" style="color:var(--text-muted)" x-text="t('priority') + ' ' + r.priority"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <code class="text-xs px-2 py-0.5 rounded truncate max-w-md" style="background:var(--bg-input);color:var(--text-primary)" x-text="r.value"></code>
+                          <button @click="copyText(r.value)" class="shrink-0 p-1 rounded hover:opacity-70" style="color:var(--text-muted)" :title="t('copy')">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                          </button>
+                        </div>
+                        <p class="text-xs mt-0.5" style="color:var(--text-muted)" x-text="r.description"></p>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+                <!-- 推荐记录 -->
+                <div class="mt-5 mb-2 flex items-center gap-2">
+                  <h4 class="text-sm font-semibold" style="color:var(--text-primary)" x-text="t('recommended')"></h4>
+                  <span class="text-xs px-1.5 py-0.5 rounded" style="background:#fef3c7;color:#92400e" x-text="t('optional')"></span>
+                </div>
+                <div class="space-y-2">
+                  <template x-for="(r, i) in dnsRecords.filter(x => !x.required)" :key="'opt-'+i">
+                    <div class="flex items-center gap-3 p-3 rounded-lg" style="background:var(--bg-body);border:1px dashed var(--border)">
+                      <div class="shrink-0">
+                        <svg x-show="r.verified" class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <svg x-show="!r.verified" class="w-5 h-5" style="color:var(--text-muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="px-1.5 py-0.5 rounded text-xs font-bold" :style="r.record_type === 'CNAME' ? 'background:#ede9fe;color:#6d28d9' : r.record_type === 'SRV' ? 'background:#fce7f3;color:#9d174d' : 'background:#d1fae5;color:#065f46'" x-text="r.record_type"></span>
+                          <span class="text-sm font-medium truncate" style="color:var(--text-primary)" x-text="r.host"></span>
+                          <span x-show="r.priority != null" class="text-xs" style="color:var(--text-muted)" x-text="t('priority') + ' ' + r.priority + (r.port ? ' ' + t('port') + ' ' + r.port : '')"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <code class="text-xs px-2 py-0.5 rounded truncate max-w-md" style="background:var(--bg-input);color:var(--text-primary)" x-text="r.value"></code>
+                          <button @click="copyText(r.value)" class="shrink-0 p-1 rounded hover:opacity-70" style="color:var(--text-muted)" :title="t('copy')">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                          </button>
+                        </div>
+                        <p class="text-xs mt-0.5" style="color:var(--text-muted)" x-text="r.description"></p>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                  <button class="btn-secondary btn-sm" @click="closeWizard()" x-text="t('domains_setup_later')"></button>
+                  <button class="btn-primary btn-sm" :disabled="verifying || guideLoading" @click="wizardStep = 2; verifyDns()">
+                    <span x-show="!verifying" x-text="t('domains_verify_dns')"></span>
+                    <span x-show="verifying" x-text="t('domains_verifying')"></span>
+                  </button>
+                </div>
+                </div>
+              </div>
+
+              <!-- 步骤3：申请证书 -->
+              <div x-show="wizardStep === 3" class="p-6">
+                <div class="mb-4 p-3 rounded-lg" style="background:#d1fae5;color:#065f46">
+                  <p class="text-sm font-medium" x-text="t('domains_dns_ok')"></p>
+                </div>
+
+                <!-- 证书类型选择 -->
+                <div class="mb-5">
+                  <label class="label" x-text="t('domains_cert_method')"></label>
+                  <div class="grid grid-cols-2 gap-3">
+                    <label class="relative flex cursor-pointer">
+                      <input type="radio" x-model="certMethod" value="acme" class="peer sr-only">
+                      <div class="w-full p-3 rounded-lg border-2 transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50" style="border-color:var(--border-color)">
+                        <div class="font-medium text-sm" style="color:var(--text-primary)">Let's Encrypt (ACME)</div>
+                        <div class="text-xs mt-1" style="color:var(--text-muted)" x-text="t('domains_acme_desc')"></div>
+                      </div>
+                    </label>
+                    <label class="relative flex cursor-pointer">
+                      <input type="radio" x-model="certMethod" value="self-signed" class="peer sr-only">
+                      <div class="w-full p-3 rounded-lg border-2 transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50" style="border-color:var(--border-color)">
+                        <div class="font-medium text-sm" style="color:var(--text-primary)" x-text="t('domains_self_signed')"></div>
+                        <div class="text-xs mt-1" style="color:var(--text-muted)" x-text="t('domains_self_signed_desc')"></div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div x-show="certMethod === 'self-signed'" class="mb-4 p-3 rounded-lg" style="background:#fef3c7;color:#92400e">
+                  <p class="text-sm" x-text="t('domains_self_signed_warn')"></p>
+                </div>
+
+                <div x-show="certResults.length > 0" class="mb-4 space-y-3">
+                  <template x-for="(r, i) in certResults" :key="i">
+                    <div class="p-3 rounded-lg" :style="r.status === 'done' ? 'background:#d1fae5;color:#065f46' : r.status === 'failed' ? 'background:#fef2f2;color:#991b1b' : 'background:var(--bg-hover);color:var(--text-secondary)'">
+                      <div class="flex items-center gap-2 mb-1">
+                        <svg x-show="r.status === 'done'" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <svg x-show="r.status === 'failed'" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <svg x-show="r.status === 'pending' || r.status === 'requesting'" class="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <span class="font-medium" x-text="r.domain"></span>
+                      </div>
+                      <div class="text-sm ml-6" x-show="r.step_name">
+                        <span x-text="r.step_name"></span>
+                        <span x-show="r.step > 0" x-text="' (' + r.step + '/' + r.total_steps + ')'"></span>
+                      </div>
+                      <div class="text-xs ml-6 mt-0.5 opacity-75" x-show="r.detail" x-text="r.detail"></div>
+                    </div>
+                  </template>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                  <button class="btn-secondary btn-sm" @click="closeWizard()" x-text="t('domains_do_later')"></button>
+                  <button class="btn-primary btn-sm" :disabled="certLoading" @click="setupCert()">
+                    <span x-show="!certLoading && certResults.length === 0 && certMethod === 'acme'" x-text="t('domains_apply_cert')"></span>
+                    <span x-show="!certLoading && certResults.length === 0 && certMethod === 'self-signed'" x-text="t('domains_generate_self_signed')"></span>
+                    <span x-show="!certLoading && certResults.length > 0" x-text="t('domains_reapply')"></span>
+                    <span x-show="certLoading" x-text="t('domains_applying')"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 步骤4：完成 -->
+              <div x-show="wizardStep === 4" class="p-6">
+                <div class="text-center py-8">
+                  <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background:#d1fae5">
+                    <svg class="w-8 h-8" style="color:#059669" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  </div>
+                  <h3 class="text-lg font-semibold mb-2" style="color:var(--text-primary)" x-text="t('domains_setup_done')"></h3>
+                  <p class="text-sm mb-4" style="color:var(--text-secondary)" x-text="t('domains_setup_done_msg').replace('{name}', wizardDomain ? wizardDomain.name : '')"></p>
+                  <div x-show="certResults.length > 0" class="mb-4 space-y-1 text-left max-w-md mx-auto">
+                    <template x-for="(r, i) in certResults" :key="'done-'+i">
+                      <div class="p-2 rounded text-sm" :style="r.success ? 'background:#d1fae5;color:#065f46' : 'background:#fef2f2;color:#991b1b'" x-text="r.message"></div>
+                    </template>
+                  </div>
+                  <button class="btn-primary btn-sm" @click="closeWizard()" x-text="t('domains_wizard_done')"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('domains_title')"></h3>
+            <button class="btn-primary btn-sm" @click="showAdd = true" x-text="t('domains_add')"></button>
+          </div>
+          <div x-show="showAdd" class="card mb-4">
+            <div class="card-body">
+              <div class="grid grid-cols-3 gap-4">
+                <div><label class="label" x-text="t('domain')"></label><input x-model="newDomain.name" class="input" placeholder="example.com"></div>
+                <div><label class="label" x-text="t('domains_default_quota')"></label><input x-model.number="newDomain.default_quota_mb" type="number" class="input" value="1024"></div>
+                <div><label class="label" x-text="t('notes')"></label><input x-model="newDomain.notes" class="input" :placeholder="t('optional')"></div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <button class="btn-primary btn-sm" @click="addDomain()" x-text="t('add')"></button>
+                <button class="btn-secondary btn-sm" @click="showAdd = false" x-text="t('cancel')"></button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <table class="table w-full">
+              <thead><tr><th x-text="t('domain')"></th><th x-text="t('status')"></th><th x-text="t('domains_setup')"></th><th x-text="t('domains_dns_status')"></th><th x-text="t('domains_default_quota')"></th><th x-text="t('domains_register_config')"></th><th x-text="t('table_actions')"></th></tr></thead>
+              <tbody>
+                <template x-for="d in domains" :key="d.id">
+                  <tr>
+                    <td class="font-medium" x-text="d.name"></td>
+                    <td><span :class="d.enabled ? 'badge-success' : 'badge-danger'" x-text="d.enabled ? t('enabled') : t('disabled')"></span></td>
+                    <td>
+                      <span :class="getSetupStatus(d) === 'completed' ? 'badge-success' : getSetupStatus(d) === 'partial' ? 'badge-warning' : 'badge-danger'" x-text="getSetupStatusText(d)"></span>
+                    </td>
+                    <td>
+                      <div class="flex gap-1">
+                        <span class="inline-flex items-center gap-0.5 text-xs" :style="d.mx_verified ? 'color:#16a34a' : 'color:var(--text-muted)'" x-text="d.mx_verified ? 'MX✓' : 'MX✗'"></span>
+                        <span class="inline-flex items-center gap-0.5 text-xs" :style="d.spf_verified ? 'color:#16a34a' : 'color:var(--text-muted)'" x-text="d.spf_verified ? 'SPF✓' : 'SPF✗'"></span>
+                        <span class="inline-flex items-center gap-0.5 text-xs" :style="d.dkim_verified ? 'color:#16a34a' : 'color:var(--text-muted)'" x-text="d.dkim_verified ? 'DKIM✓' : 'DKIM✗'"></span>
+                        <span class="inline-flex items-center gap-0.5 text-xs" :style="d.dmarc_verified ? 'color:#16a34a' : 'color:var(--text-muted)'" x-text="d.dmarc_verified ? 'DMARC✓' : 'DMARC✗'"></span>
+                      </div>
+                    </td>
+                    <td x-text="d.default_quota_mb + ' MB'"></td>
+                    <td>
+                      <span class="text-xs" :class="isRegisterEnabled(d) ? 'badge-success' : 'badge-muted'" x-text="registerSummary(d)"></span>
+                    </td>
+                    <td>
+                      <div class="flex gap-2">
+                        <button x-show="!d.setup_completed" class="btn-primary btn-sm" @click="openWizard(d.id)" x-text="t('domains_setup_wizard_btn')"></button>
+                        <button class="btn-secondary btn-sm" @click="startEdit(d)" x-text="t('edit')"></button>
+                        <button class="btn-secondary btn-sm" @click="openRegisterPanel(d)" x-text="t('domains_register_config')"></button>
+                        <button class="btn-danger btn-sm" @click="deleteDomain(d.id, d.name)" x-text="t('delete')"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 编辑域名 -->
+          <div x-show="editingId" class="card mb-4">
+            <div class="card-body">
+              <h4 class="text-sm font-semibold mb-3" style="color:var(--text-primary)" x-text="t('domains_edit_title')"></h4>
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="label" x-text="t('status')"></label>
+                  <select x-model="editForm.enabled" class="input">
+                    <option :value="true" x-text="t('enabled')"></option>
+                    <option :value="false" x-text="t('disabled')"></option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label" x-text="t('domains_default_quota')"></label>
+                  <input type="number" x-model="editForm.default_quota_mb" class="input">
+                </div>
+                <div>
+                  <label class="label" x-text="t('notes')"></label>
+                  <input x-model="editForm.notes" class="input" :placeholder="t('optional_note')">
+                </div>
+              </div>
+              <div class="flex justify-end gap-3 mt-4">
+                <button class="btn-secondary btn-sm" @click="editingId = null" x-text="t('cancel')"></button>
+                <button class="btn-primary btn-sm btn-write" @click="saveEdit(editingId)" x-text="t('save')"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 注册配置侧边栏（drawer） -->
+          <div x-show="showRegisterPanel" x-cloak class="fixed inset-0 z-50" @keydown.escape.window="closeRegisterPanel()">
+            <div class="absolute inset-0 bg-black/40" @click="closeRegisterPanel()"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-full max-w-md shadow-2xl flex flex-col"
+                 style="background:#ffffff; color:#111827; animation: slideInRight .25s ease">
+              <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color:#e5e7eb">
+                <div>
+                  <h3 class="text-base font-semibold" style="color:#111827" x-text="t('domains_register_config')"></h3>
+                  <p class="text-xs" style="color:#6b7280" x-text="registerDomain ? registerDomain.name : ''"></p>
+                </div>
+                <button class="btn-secondary btn-sm" @click="closeRegisterPanel()" x-text="t('close')"></button>
+              </div>
+              <div class="border-b flex" style="border-color:#e5e7eb">
+                <button class="px-4 py-2 text-sm" :class="registerConfigTab === 'form' ? 'border-b-2 font-semibold' : ''"
+                        :style="registerConfigTab === 'form' ? 'color:#2563eb; border-color:#2563eb' : 'color:#6b7280'"
+                        @click="registerConfigTab='form'; initCfgForm()" x-text="t('domains_register_form')"></button>
+                <button class="px-4 py-2 text-sm" :class="registerConfigTab === 'json' ? 'border-b-2 font-semibold' : ''"
+                        :style="registerConfigTab === 'json' ? 'color:#2563eb; border-color:#2563eb' : 'color:#6b7280'"
+                        @click="registerConfigTab='json'" x-text="t('domains_register_json')"></button>
+              </div>
+              <div class="flex-1 overflow-y-auto px-5 py-4">
+                <!-- 表单模式 -->
+                <div x-show="registerConfigTab === 'form'" x-init="initCfgForm()">
+                  <div class="space-y-3">
+                    <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                      <div>
+                        <div class="text-sm font-medium" style="color:#111827" x-text="t('domains_register_enabled')"></div>
+                        <div class="text-xs" style="color:#6b7280" x-text="t('domains_register_desc')"></div>
+                      </div>
+                      <input type="checkbox" x-model="_cfgForm.enabled" class="rounded">
+                    </label>
+                    <label class="block">
+                      <span class="label" x-text="t('domains_register_default_quota')"></span>
+                      <input type="number" x-model.number="_cfgForm.default_quota_mb" class="input" min="1">
+                    </label>
+                    <div>
+                      <div class="label mb-2" x-text="t('domains_register_protocols')"></div>
+                      <div class="space-y-2">
+                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                          <span class="text-sm" style="color:#111827" x-text="t('domains_register_allow_smtp')"></span>
+                          <input type="checkbox" x-model="_cfgForm.allow_smtp" class="rounded">
+                        </label>
+                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                          <span class="text-sm" style="color:#111827" x-text="t('domains_register_allow_pop3')"></span>
+                          <input type="checkbox" x-model="_cfgForm.allow_pop3" class="rounded">
+                        </label>
+                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                          <span class="text-sm" style="color:#111827" x-text="t('domains_register_allow_imap')"></span>
+                          <input type="checkbox" x-model="_cfgForm.allow_imap" class="rounded">
+                        </label>
+                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                          <span class="text-sm" style="color:#111827" x-text="t('domains_register_allow_forward')"></span>
+                          <input type="checkbox" x-model="_cfgForm.allow_forward" class="rounded">
+                        </label>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                      <label class="block">
+                        <span class="label" x-text="t('domains_max_aliases')"></span>
+                        <input type="number" x-model.number="_cfgForm.max_aliases" class="input" min="0">
+                        <span class="text-xs" style="color:#6b7280" x-text="t('domains_unlimited')"></span>
+                      </label>
+                      <label class="block">
+                        <span class="label" x-text="t('domains_max_forwarders')"></span>
+                        <input type="number" x-model.number="_cfgForm.max_forwarders" class="input" min="0">
+                      </label>
+                      <label class="block">
+                        <span class="label" x-text="t('domains_max_mail_per_day')"></span>
+                        <input type="number" x-model.number="_cfgForm.max_mail_per_day" class="input" min="0">
+                      </label>
+                    </div>
+                    <div class="space-y-2">
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                        <div>
+                          <div class="text-sm font-medium" style="color:#111827" x-text="t('domains_captcha_required')"></div>
+                          <div class="text-xs" style="color:#6b7280" x-text="t('domains_captcha_desc')"></div>
+                        </div>
+                        <input type="checkbox" x-model="_cfgForm.captcha_required" class="rounded">
+                      </label>
+                    </div>
+
+                    <!-- 邮件大小限制覆盖 -->
+                    <div class="p-3 rounded-lg space-y-3" style="background:#f3f4f6">
+                      <div class="text-sm font-medium" style="color:#111827" x-text="t('settings_mail_size_title')"></div>
+                      <div class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="label" x-text="t('domains_max_send_size')"></label>
+                          <input type="number" x-model.number="_cfgForm.max_send_size_mb" class="input" min="1" max="10240" placeholder="" style="width:120px">
+                        </div>
+                        <div>
+                          <label class="label" x-text="t('domains_max_receive_size')"></label>
+                          <input type="number" x-model.number="_cfgForm.max_receive_size_mb" class="input" min="1" max="10240" placeholder="" style="width:120px">
+                        </div>
+                      </div>
+                      <div class="text-xs" style="color:#6b7280" x-text="t('domains_size_hint')"></div>
+                    </div>
+
+                    <div class="text-xs p-3 rounded-lg" style="color:#6b7280; background:#f3f4f6" x-text="t('domains_register_note')"></div>
+                  </div>
+                </div>
+                <!-- JSON 高级模式 -->
+                <div x-show="registerConfigTab === 'json'">
+                  <div class="text-xs mb-2" style="color:var(--text-muted)" x-text="t('domains_json_advanced')"></div>
+                  <textarea x-model="registerConfigText" class="input font-mono text-xs"
+                            style="width:100%; min-height: 360px; font-family: 'Cascadia Code', monospace; resize: vertical;"
+                            @input="syncConfigFromText()"></textarea>
+                  <div x-show="registerConfigError" class="text-xs mt-2" style="color:#dc2626" x-text="registerConfigError"></div>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t flex justify-end gap-2" style="border-color:#e5e7eb">
+                <button class="btn-secondary btn-sm" @click="closeRegisterPanel()" x-text="t('cancel')"></button>
+                <button class="btn-primary btn-sm" @click="saveRegisterConfig()" x-text="t('save')"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div x-show="page === 'mailboxes'" x-data="pageMixins.mailboxes" x-init="init(); loadDomains(); loadMailboxes()" @page-change.window="if($event.detail.page==='mailboxes'){loadDomains();loadMailboxes()}">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('mailboxes_title')"></h3>
+            <button class="btn-primary btn-sm" @click="showAdd = true" x-text="t('mailboxes_create')"></button>
+          </div>
+          <div x-show="showAdd" class="card mb-4">
+            <div class="card-body">
+              <div class="grid grid-cols-3 gap-4">
+                <div><label class="label" x-text="t('domain')"></label><select x-model="newMailbox.domain_id" class="input"><template x-for="d in domains" :key="d.id"><option :value="d.id" x-text="d.name"></option></template></select></div>
+                <div><label class="label" x-text="t('mailboxes_username')"></label><input x-model="newMailbox.username" class="input" placeholder="user"></div>
+                <div><label class="label" x-text="t('mailboxes_password')"></label><input x-model="newMailbox.password" type="password" class="input" :placeholder="t('mailboxes_password')"></div>
+                <div><label class="label" x-text="t('mailboxes_quota')"></label><input x-model.number="newMailbox.quota_mb" type="number" class="input" value="1024"></div>
+                <div><label class="label" x-text="t('mailboxes_forward_to')"></label><input x-model="newMailbox.forward_to" class="input" :placeholder="t('mailboxes_forward_placeholder')"></div>
+                <div class="flex items-end gap-4">
+                  <label class="flex items-center gap-2"><input type="checkbox" x-model="newMailbox.keep_copy"> <span x-text="t('mailboxes_keep_copy')"></span></label>
+                  <label class="flex items-center gap-2"><input type="checkbox" x-model="newMailbox.is_admin"> <span x-text="t('mailboxes_is_admin')"></span></label>
+                </div>
+              </div>
+
+              <!-- 协议权限 -->
+              <div class="mt-4 p-3 rounded-lg" style="background:#f3f4f6">
+                <div class="flex items-center justify-between mb-2">
+                  <div>
+                    <div class="text-sm font-semibold" style="color:#111827" x-text="t('mailboxes_protocols')"></div>
+                    <div class="text-xs" style="color:#6b7280" x-text="t('mailboxes_protocols_desc')"></div>
+                  </div>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" x-model="newMailbox._enableProtocols">
+                    <span class="text-sm" x-text="t('mailboxes_override_domain')"></span>
+                  </label>
+                </div>
+                <div class="grid grid-cols-5 gap-3" :style="!newMailbox._enableProtocols ? 'opacity:0.5; pointer-events:none' : ''">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" x-model="newMailbox._smtp" :disabled="!newMailbox._enableProtocols">
+                    <span class="text-sm" x-text="t('mailboxes_allow_smtp')"></span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" x-model="newMailbox._pop3" :disabled="!newMailbox._enableProtocols">
+                    <span class="text-sm" x-text="t('mailboxes_allow_pop3')"></span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" x-model="newMailbox._imap" :disabled="!newMailbox._enableProtocols">
+                    <span class="text-sm" x-text="t('mailboxes_allow_imap')"></span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" x-model="newMailbox._forward" :disabled="!newMailbox._enableProtocols">
+                    <span class="text-sm" x-text="t('mailboxes_allow_forward')"></span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" x-model="newMailbox._webmail" :disabled="!newMailbox._enableProtocols">
+                    <span class="text-sm" x-text="t('mailboxes_allow_webmail')"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="flex gap-2 mt-4">
+                <button class="btn-primary btn-sm" @click="addMailbox()" x-text="t('create')"></button>
+                <button class="btn-secondary btn-sm" @click="showAdd = false" x-text="t('cancel')"></button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <table class="table w-full">
+              <thead><tr><th x-text="t('mailboxes_email')"></th><th x-text="t('status')"></th><th x-text="t('mailboxes_quota')"></th><th x-text="t('mailboxes_used')"></th><th x-text="t('mailboxes_protocols_short')"></th><th x-text="t('mailboxes_is_admin')"></th><th x-text="t('mailboxes_last_login')"></th><th x-text="t('table_actions')"></th></tr></thead>
+              <tbody>
+                <template x-for="m in mailboxes" :key="m.id">
+                  <tr>
+                    <td class="font-medium" x-text="m.username + '@' + m.domain_name"></td>
+                    <td><span :class="m.enabled ? 'badge-success' : 'badge-danger'" x-text="m.enabled ? t('enabled') : t('disabled')"></span></td>
+                    <td x-text="m.quota_mb + ' MB'"></td>
+                    <td x-text="m.used_mb.toFixed(1) + ' MB'"></td>
+                    <td>
+                      <div class="flex gap-1 flex-wrap" style="max-width:180px">
+                        <template x-for="b in protoBadges(m)" :key="b.k">
+                          <span class="text-xs px-2 py-0.5 rounded"
+                                :style="b.ok ? 'background:#dcfce7; color:#166534' : 'background:#fee2e2; color:#991b1b; text-decoration:line-through'"
+                                :title="b.title + (b.ok ? t('mailboxes_enabled') : t('mailboxes_disabled'))"
+                                x-text="b.k"></span>
+                        </template>
+                        <span x-show="effectiveProtocols(m).source === 'inherited'" class="text-xs" style="color:#6b7280" :title="t('mailboxes_inherited')">⤴</span>
+                      </div>
+                    </td>
+                    <td><span :class="m.is_admin ? 'badge-info' : ''" x-text="m.is_admin ? t('yes') : t('no')"></span></td>
+                    <td x-text="m.last_login_at || '-'"></td>
+                    <td>
+                      <div class="flex gap-2">
+                        <button class="btn-secondary btn-sm" @click="startEdit(m)" x-text="t('edit')"></button>
+                        <button class="btn-secondary btn-sm" @click="openProtoPanel(m)" x-text="t('mailboxes_protocols_short')"></button>
+                        <button class="btn-secondary btn-sm btn-write" @click="resetPassword(m.id)" x-text="t('mailboxes_reset_password')"></button>
+                        <button class="btn-danger btn-sm" @click="deleteMailbox(m.id, m.username + '@' + m.domain_name)" x-text="t('delete')"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 编辑邮箱 -->
+          <div x-show="editingId" class="card mb-4">
+            <div class="card-body">
+              <h4 class="text-sm font-semibold mb-3" style="color:var(--text-primary)" x-text="t('mailboxes_edit')"></h4>
+              <div class="grid grid-cols-4 gap-4">
+                <div>
+                  <label class="label" x-text="t('status')"></label>
+                  <select x-model="editForm.enabled" class="input">
+                    <option :value="true" x-text="t('enabled')"></option>
+                    <option :value="false" x-text="t('disabled')"></option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label" x-text="t('mailboxes_quota')"></label>
+                  <input type="number" x-model="editForm.quota_mb" class="input">
+                </div>
+                <div>
+                  <label class="label" x-text="t('mailboxes_keep_copy')"></label>
+                  <select x-model="editForm.keep_copy" class="input">
+                    <option :value="true" x-text="t('yes')"></option>
+                    <option :value="false" x-text="t('no')"></option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label" x-text="t('mailboxes_is_admin')"></label>
+                  <select x-model="editForm.is_admin" class="input">
+                    <option :value="true" x-text="t('yes')"></option>
+                    <option :value="false" x-text="t('no')"></option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex justify-end gap-3 mt-4">
+                <button class="btn-secondary btn-sm" @click="editingId = null" x-text="t('cancel')"></button>
+                <button class="btn-primary btn-sm" @click="saveEdit(editingId)" x-text="t('save')"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 邮箱协议配置侧边栏 -->
+          <div x-show="showProtoPanel" x-cloak class="fixed inset-0 z-50" @keydown.escape.window="closeProtoPanel()">
+            <div class="absolute inset-0 bg-black/40" @click="closeProtoPanel()"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-full max-w-md shadow-2xl flex flex-col"
+                 style="background:#ffffff; color:#111827; animation: slideInRight .25s ease">
+              <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color:#e5e7eb">
+                <div>
+                  <h3 class="text-base font-semibold" style="color:#111827" x-text="t('mailboxes_proto_config')"></h3>
+                  <p class="text-xs" style="color:#6b7280" x-text="protoMailbox ? (protoMailbox.username + '@' + protoMailbox.domain_name) : ''"></p>
+                </div>
+                <button class="btn-secondary btn-sm" @click="closeProtoPanel()" x-text="t('close')"></button>
+              </div>
+              <div class="border-b flex" style="border-color:#e5e7eb">
+                <button class="px-4 py-2 text-sm" :class="protoTab === 'form' ? 'border-b-2 font-semibold' : ''"
+                        :style="protoTab === 'form' ? 'color:#2563eb; border-color:#2563eb' : 'color:#6b7280'"
+                        @click="switchProtoTab('form')" x-text="t('domains_register_form')"></button>
+                <button class="px-4 py-2 text-sm" :class="protoTab === 'json' ? 'border-b-2 font-semibold' : ''"
+                        :style="protoTab === 'json' ? 'color:#2563eb; border-color:#2563eb' : 'color:#6b7280'"
+                        @click="switchProtoTab('json')" x-text="t('domains_register_json')"></button>
+              </div>
+              <div class="flex-1 overflow-y-auto px-5 py-4">
+                <!-- 表单模式 -->
+                <div x-show="protoTab === 'form'">
+                  <div class="space-y-3">
+                    <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                      <div>
+                        <div class="text-sm font-medium" style="color:#111827" x-text="t('mailboxes_inherit_domain')"></div>
+                        <div class="text-xs" style="color:#6b7280" x-text="t('mailboxes_inherit_domain_desc')"></div>
+                      </div>
+                      <input type="checkbox" x-model="protoForm.inherit" class="rounded">
+                    </label>
+                    <div :style="protoForm.inherit ? 'opacity:0.55; pointer-events:none' : ''" class="space-y-2">
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_smtp')"></span>
+                        <input type="checkbox" x-model="protoForm.smtp" :disabled="protoForm.inherit" class="rounded">
+                      </label>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_pop3')"></span>
+                        <input type="checkbox" x-model="protoForm.pop3" :disabled="protoForm.inherit" class="rounded">
+                      </label>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_imap')"></span>
+                        <input type="checkbox" x-model="protoForm.imap" :disabled="protoForm.inherit" class="rounded">
+                      </label>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_forward')"></span>
+                        <input type="checkbox" x-model="protoForm.forward" :disabled="protoForm.inherit" class="rounded">
+                      </label>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_webmail')"></span>
+                        <input type="checkbox" x-model="protoForm.webmail" :disabled="protoForm.inherit" class="rounded">
+                      </label>
+                    </div>
+                    <div class="text-xs p-3 rounded-lg" style="color:#6b7280; background:#f3f4f6" x-text="t('mailboxes_proto_note')"></div>
+                  </div>
+                </div>
+                <!-- JSON 模式 -->
+                <div x-show="protoTab === 'json'">
+                  <div class="text-xs mb-2" style="color:#6b7280" x-text="t('mailboxes_proto_json_note')"></div>
+                  <textarea x-model="protoText" class="input font-mono text-xs"
+                            style="width:100%; min-height: 300px; font-family: 'Cascadia Code', monospace; resize: vertical;"
+                            @input="syncProtoFromText()"></textarea>
+                  <div x-show="protoError" class="text-xs mt-2" style="color:#dc2626" x-text="protoError"></div>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t flex justify-end gap-2" style="border-color:#e5e7eb">
+                <button class="btn-secondary btn-sm" @click="closeProtoPanel()" x-text="t('cancel')"></button>
+                <button class="btn-primary btn-sm" @click="saveProto()" x-text="t('save')"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inbox -->
+        <div x-show="page === 'inbox'" x-data="pageMixins.inbox" x-init="init(); loadDomains(); loadMails()" @page-change.window="if($event.detail.page==='inbox'){loadDomains();loadMails()}">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('mail_inbox')"></h3>
+            <div class="flex gap-2 flex-wrap">
+              <input x-model="mailbox" class="input" style="width:160px" :placeholder="t('mail_recipient')" @keydown.enter="searchMails()">
+              <select x-model="domain" class="input" style="width:130px" @change="searchMails()">
+                <option value="" x-text="t('mail_all_domains')"></option>
+                <template x-for="d in domains" :key="d.id">
+                  <option :value="d.name" x-text="d.name"></option>
+                </template>
+              </select>
+              <input x-model="search" class="input" style="width:160px" :placeholder="t('mail_search_placeholder')" @keydown.enter="searchMails()">
+              <select x-model="status" class="input" style="width:100px" @change="searchMails()">
+                <option value="" x-text="t('mail_all_status')"></option>
+                <option value="delivered" x-text="t('mail_delivered')"></option>
+                <option value="bounced" x-text="t('mail_bounced')"></option>
+                <option value="blocked" x-text="t('mail_blocked')"></option>
+                <option value="deferred" x-text="t('mail_deferred')"></option>
+              </select>
+              <select x-model="hours" class="input" style="width:100px" @change="searchMails()">
+                <option value="24" x-text="t('mail_24h')"></option>
+                <option value="72" x-text="t('mail_3d')"></option>
+                <option value="168" x-text="t('mail_7d')"></option>
+                <option value="720" x-text="t('mail_30d')"></option>
+              </select>
+              <button class="btn-primary btn-sm" @click="searchMails()" x-text="t('search')"></button>
+            </div>
+          </div>
+          <div class="card">
+            <table class="table w-full">
+              <thead><tr><th x-text="t('mail_from')"></th><th x-text="t('mail_to')"></th><th x-text="t('mail_subject')"></th><th x-text="t('status')"></th><th x-text="t('mail_size')"></th><th x-text="t('mail_spam_score')"></th><th x-text="t('mail_time')"></th></tr></thead>
+              <tbody>
+                <template x-for="m in mails" :key="m.id">
+                  <tr class="cursor-pointer hover:bg-blue-50" @click="openDetail(m.id)">
+                    <td class="text-xs" x-text="m.from_addr"></td>
+                    <td class="text-xs" x-text="m.to_addr"></td>
+                    <td class="text-xs" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="m.subject || '-'"></td>
+                    <td><span :class="statusBadge(m.status)" x-text="statusText(m.status)"></span>
+                      <div x-show="m.status === 'bounced' && m.reject_reason" class="text-xs mt-1" style="color:#dc2626;max-width:200px;word-break:break-all" x-text="m.reject_reason"></div>
+                    </td>
+                    <td class="text-xs" x-text="formatSize(m.size_bytes)"></td>
+                    <td><span :class="m.spam_score > 5 ? 'text-red-600 font-semibold' : ''" x-text="m.spam_score.toFixed(1)"></span></td>
+                    <td class="text-xs" x-text="formatTime(m.created_at)"></td>
+                  </tr>
+                </template>
+                <tr x-show="mails.length === 0">
+                  <td colspan="7" class="text-center py-8" style="color:var(--text-muted)" x-text="t('mail_no_records')"></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="flex justify-between items-center p-4" style="border-top:1px solid var(--border)">
+              <span class="text-sm" style="color:var(--text-muted)" x-text="t('mail_total').replace('{total}', total)"></span>
+              <div class="flex gap-2">
+                <button class="btn-secondary btn-sm" :disabled="pageNum <= 1" @click="prevPage()" x-text="t('mail_prev_page')"></button>
+                <span class="text-sm" style="color:var(--text-secondary)" x-text="t('mail_page').replace('{page}', pageNum)"></span>
+                <button class="btn-secondary btn-sm" :disabled="pageNum * pageSize >= total" @click="nextPage()" x-text="t('mail_next_page')"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 邮件详情模态框 -->
+          <div x-show="detailOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)" @click.self="closeDetail()">
+            <div class="bg-white rounded-lg shadow-2xl flex flex-col" style="width:90vw;max-width:900px;height:85vh;max-height:900px">
+              <div class="flex justify-between items-center px-5 py-3" style="border-bottom:1px solid var(--border)">
+                <h3 class="text-base font-semibold" x-text="detail ? detail.subject : t('mail_detail')"></h3>
+                <button class="text-2xl leading-none" style="color:var(--text-muted)" @click="closeDetail()">×</button>
+              </div>
+              <div x-show="detailLoading" class="flex-1 flex items-center justify-center" style="color:var(--text-muted)" x-text="t('loading')"></div>
+              <div x-show="!detailLoading && detailError" class="flex-1 flex items-center justify-center p-6 text-center" style="color:#dc2626" x-text="detailError"></div>
+              <div x-show="!detailLoading && detail" class="flex-1 flex flex-col overflow-hidden">
+                <div class="px-5 py-3 text-sm space-y-1" style="border-bottom:1px solid var(--border);background:var(--bg-table-head)">
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_from')"></span><span x-text="detail?.from_addr"></span></div>
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_to')"></span><span x-text="detail?.to_addr"></span></div>
+                  <div class="flex gap-2" x-show="detail?.cc_addrs"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_cc')"></span><span x-text="detail?.cc_addrs"></span></div>
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_subject')"></span><span x-text="detail?.subject"></span></div>
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_date')"></span><span x-text="detail?.date || '-'"></span></div>
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('status')"></span><span :class="statusBadge(detail?.status)" x-text="statusText(detail?.status)"></span></div>
+                </div>
+                <div class="flex gap-1 px-5 pt-2" x-show="detail?.body_html && detail?.body_text">
+                  <button class="px-3 py-1 text-sm rounded-t" :style="tab==='html' ? 'background:var(--accent);color:#fff' : 'background:var(--bg-table-head);color:var(--text-secondary)'" @click="tab='html'">HTML</button>
+                  <button class="px-3 py-1 text-sm rounded-t" :style="tab==='text' ? 'background:var(--accent);color:#fff' : 'background:var(--bg-table-head);color:var(--text-secondary)'" @click="tab='text'" x-text="t('mail_plain_text')"></button>
+                </div>
+                <div class="flex-1 overflow-hidden flex flex-col">
+                  <pre x-show="(tab==='text' || !detail?.body_html) && detail?.body_text" class="flex-1 overflow-auto p-4 text-sm whitespace-pre-wrap" style="font-family:inherit;color:var(--text-primary)" x-text="detail?.body_text || ''"></pre>
+                  <iframe x-show="tab==='html' && detail?.body_html" :srcdoc="renderHtmlIframe()" sandbox="" class="flex-1 w-full border-0" style="background:#fff"></iframe>
+                  <div x-show="!detail?.body_text && !detail?.body_html" class="flex-1 flex items-center justify-center" style="color:var(--text-muted)" x-text="t('mail_no_body')"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sent -->
+        <div x-show="page === 'sent'" x-data="pageMixins.sent" x-init="init(); loadDomains(); loadMails()" @page-change.window="if($event.detail.page==='sent'){loadDomains();loadMails()}">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('mail_sent')"></h3>
+            <div class="flex gap-2 flex-wrap">
+              <input x-model="mailbox" class="input" style="width:160px" :placeholder="t('mail_sender')" @keydown.enter="searchMails()">
+              <select x-model="domain" class="input" style="width:130px" @change="searchMails()">
+                <option value="" x-text="t('mail_all_domains')"></option>
+                <template x-for="d in domains" :key="d.id">
+                  <option :value="d.name" x-text="d.name"></option>
+                </template>
+              </select>
+              <input x-model="search" class="input" style="width:160px" :placeholder="t('mail_search_recipient')" @keydown.enter="searchMails()">
+              <select x-model="status" class="input" style="width:100px" @change="searchMails()">
+                <option value="" x-text="t('mail_all_status')"></option>
+                <option value="delivered" x-text="t('mail_delivered')"></option>
+                <option value="bounced" x-text="t('mail_bounced')"></option>
+                <option value="deferred" x-text="t('mail_deferred')"></option>
+              </select>
+              <select x-model="hours" class="input" style="width:100px" @change="searchMails()">
+                <option value="24" x-text="t('mail_24h')"></option>
+                <option value="72" x-text="t('mail_3d')"></option>
+                <option value="168" x-text="t('mail_7d')"></option>
+                <option value="720" x-text="t('mail_30d')"></option>
+              </select>
+              <button class="btn-primary btn-sm" @click="searchMails()" x-text="t('search')"></button>
+            </div>
+          </div>
+          <div class="card">
+            <table class="table w-full">
+              <thead><tr><th x-text="t('mail_from')"></th><th x-text="t('mail_to')"></th><th x-text="t('mail_subject')"></th><th x-text="t('status')"></th><th x-text="t('mail_size')"></th><th x-text="t('mail_time')"></th></tr></thead>
+              <tbody>
+                <template x-for="m in mails" :key="m.id">
+                  <tr class="cursor-pointer hover:bg-blue-50" @click="openDetail(m.id)">
+                    <td class="text-xs" x-text="m.from_addr"></td>
+                    <td class="text-xs" x-text="m.to_addr"></td>
+                    <td class="text-xs" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="m.subject || '-'"></td>
+                    <td><span :class="statusBadge(m.status)" x-text="statusText(m.status)"></span></td>
+                    <td class="text-xs" x-text="formatSize(m.size_bytes)"></td>
+                    <td class="text-xs" x-text="formatTime(m.created_at)"></td>
+                  </tr>
+                </template>
+                <tr x-show="mails.length === 0">
+                  <td colspan="6" class="text-center py-8" style="color:var(--text-muted)" x-text="t('mail_no_sent_records')"></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="flex justify-between items-center p-4" style="border-top:1px solid var(--border)">
+              <span class="text-sm" style="color:var(--text-muted)" x-text="t('mail_total').replace('{total}', total)"></span>
+              <div class="flex gap-2">
+                <button class="btn-secondary btn-sm" :disabled="pageNum <= 1" @click="prevPage()" x-text="t('mail_prev_page')"></button>
+                <span class="text-sm" style="color:var(--text-secondary)" x-text="t('mail_page').replace('{page}', pageNum)"></span>
+                <button class="btn-secondary btn-sm" :disabled="pageNum * pageSize >= total" @click="nextPage()" x-text="t('mail_next_page')"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 邮件详情模态框 -->
+          <div x-show="detailOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)" @click.self="closeDetail()">
+            <div class="bg-white rounded-lg shadow-2xl flex flex-col" style="width:90vw;max-width:900px;height:85vh;max-height:900px">
+              <div class="flex justify-between items-center px-5 py-3" style="border-bottom:1px solid var(--border)">
+                <h3 class="text-base font-semibold" x-text="detail ? detail.subject : t('mail_detail')"></h3>
+                <button class="text-2xl leading-none" style="color:var(--text-muted)" @click="closeDetail()">×</button>
+              </div>
+              <div x-show="detailLoading" class="flex-1 flex items-center justify-center" style="color:var(--text-muted)" x-text="t('loading')"></div>
+              <div x-show="!detailLoading && detailError" class="flex-1 flex items-center justify-center p-6 text-center" style="color:#dc2626" x-text="detailError"></div>
+              <div x-show="!detailLoading && detail" class="flex-1 flex flex-col overflow-hidden">
+                <div class="px-5 py-3 text-sm space-y-1" style="border-bottom:1px solid var(--border);background:var(--bg-table-head)">
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_from')"></span><span x-text="detail?.from_addr"></span></div>
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_to')"></span><span x-text="detail?.to_addr"></span></div>
+                  <div class="flex gap-2" x-show="detail?.cc_addrs"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_cc')"></span><span x-text="detail?.cc_addrs"></span></div>
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_subject')"></span><span x-text="detail?.subject"></span></div>
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('mail_date')"></span><span x-text="detail?.date || '-'"></span></div>
+                  <div class="flex gap-2"><span class="font-medium" style="color:var(--text-muted);min-width:60px" x-text="t('status')"></span><span :class="statusBadge(detail?.status)" x-text="statusText(detail?.status)"></span></div>
+                </div>
+                <div class="flex gap-1 px-5 pt-2" x-show="detail?.body_html && detail?.body_text">
+                  <button class="px-3 py-1 text-sm rounded-t" :style="tab==='html' ? 'background:var(--accent);color:#fff' : 'background:var(--bg-table-head);color:var(--text-secondary)'" @click="tab='html'">HTML</button>
+                  <button class="px-3 py-1 text-sm rounded-t" :style="tab==='text' ? 'background:var(--accent);color:#fff' : 'background:var(--bg-table-head);color:var(--text-secondary)'" @click="tab='text'" x-text="t('mail_plain_text')"></button>
+                </div>
+                <div class="flex-1 overflow-hidden flex flex-col">
+                  <pre x-show="(tab==='text' || !detail?.body_html) && detail?.body_text" class="flex-1 overflow-auto p-4 text-sm whitespace-pre-wrap" style="font-family:inherit;color:var(--text-primary)" x-text="detail?.body_text || ''"></pre>
+                  <iframe x-show="tab==='html' && detail?.body_html" :srcdoc="renderHtmlIframe()" sandbox="" class="flex-1 w-full border-0" style="background:#fff"></iframe>
+                  <div x-show="!detail?.body_text && !detail?.body_html" class="flex-1 flex items-center justify-center" style="color:var(--text-muted)" x-text="t('mail_no_body')"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compose -->
+        <div x-show="page === 'compose'" x-data="pageMixins.compose" x-init="loadDomains()" @page-change.window="if($event.detail.page==='compose')loadDomains()">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('mail_compose')"></h3>
+          </div>
+          <div class="card">
+            <div class="p-6 space-y-4">
+              <!-- 发件人 -->
+              <div class="flex items-center gap-3">
+                <label class="text-sm font-medium w-20 text-right" style="color:var(--text-label)" x-text="t('mail_from')"></label>
+                <select x-model="fromAddr" class="input flex-1">
+                  <option value="" x-text="t('mail_select_sender')"></option>
+                  <template x-for="m in mailboxes" :key="m.id">
+                    <option :value="m.username + '@' + m.domain_name" x-text="m.username + '@' + m.domain_name"></option>
+                  </template>
+                </select>
+              </div>
+              <!-- 收件人 -->
+              <div class="flex items-center gap-3">
+                <label class="text-sm font-medium w-20 text-right" style="color:var(--text-label)" x-text="t('mail_to')"></label>
+                <input x-model="toAddrs" class="input flex-1" :placeholder="t('mail_multiple_recipients')">
+              </div>
+              <!-- 抄送 -->
+              <div class="flex items-center gap-3">
+                <label class="text-sm font-medium w-20 text-right" style="color:var(--text-label)" x-text="t('mail_cc')"></label>
+                <input x-model="ccAddrs" class="input flex-1" :placeholder="t('mail_cc_optional')">
+              </div>
+              <!-- 主题 -->
+              <div class="flex items-center gap-3">
+                <label class="text-sm font-medium w-20 text-right" style="color:var(--text-label)" x-text="t('mail_subject')"></label>
+                <input x-model="subject" class="input flex-1" :placeholder="t('mail_subject_placeholder')">
+              </div>
+              <!-- 正文类型 -->
+              <div class="flex items-center gap-3">
+                <label class="text-sm font-medium w-20 text-right" style="color:var(--text-label)" x-text="t('mail_body_format')"></label>
+                <div class="flex gap-4">
+                  <label class="flex items-center gap-1.5 cursor-pointer text-sm" style="color:var(--text-secondary)">
+                    <input type="radio" x-model="bodyType" value="html" class="accent-blue-500"> HTML
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer text-sm" style="color:var(--text-secondary)">
+                    <input type="radio" x-model="bodyType" value="text" class="accent-blue-500"> <span x-text="t('mail_plain_text')"></span>
+                  </label>
+                </div>
+              </div>
+              <!-- 正文 -->
+              <div class="flex gap-3">
+                <label class="text-sm font-medium w-20 text-right pt-2" style="color:var(--text-label)" x-text="t('mail_body')"></label>
+                <div class="flex-1">
+                  <textarea x-show="bodyType === 'text'" x-model="bodyText" class="input" rows="12" :placeholder="t('mail_text_placeholder')"></textarea>
+                  <div x-show="bodyType === 'html'">
+                    <!-- 简易工具栏 -->
+                    <div class="flex gap-1 p-2 rounded-t-lg" style="border:1px solid var(--border);border-bottom:none;background:var(--bg-table-head)">
+                      <button type="button" class="btn-secondary btn-sm px-2 py-1 text-xs" @click="bodyHtml+='<b></b>'" :title="t('editor_bold')"><b>B</b></button>
+                      <button type="button" class="btn-secondary btn-sm px-2 py-1 text-xs" @click="bodyHtml+='<i></i>'" :title="t('editor_italic')"><i>I</i></button>
+                      <button type="button" class="btn-secondary btn-sm px-2 py-1 text-xs" @click="bodyHtml+='<u></u>'" :title="t('editor_underline')"><u>U</u></button>
+                      <button type="button" class="btn-secondary btn-sm px-2 py-1 text-xs" @click="bodyHtml+='<a href=&quot;&quot;></a>'" :title="t('editor_link')">Link</button>
+                      <button type="button" class="btn-secondary btn-sm px-2 py-1 text-xs" @click="bodyHtml+='<br>'" :title="t('editor_linebreak')">BR</button>
+                      <button type="button" class="btn-secondary btn-sm px-2 py-1 text-xs" @click="bodyHtml+='<hr>'" :title="t('editor_hr')">HR</button>
+                    </div>
+                    <textarea x-model="bodyHtml" class="input rounded-t-none" rows="12" :placeholder="t('mail_html_placeholder')"></textarea>
+                  </div>
+                </div>
+              </div>
+              <!-- 发送按钮 -->
+              <div class="flex justify-end gap-3 pt-2">
+                <button class="btn-secondary" @click="toAddrs='';ccAddrs='';subject='';bodyText='';bodyHtml=''" x-text="t('clear')"></button>
+                <button class="btn-primary" :disabled="sending" @click="sendMail()">
+                  <span x-show="!sending" x-text="t('mail_send')"></span>
+                  <span x-show="sending" x-text="t('mail_sending')"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certs -->
+        <div x-show="page === 'certs'" x-data="pageMixins.certs" x-init="init(); loadCerts()" @page-change.window="if($event.detail.page==='certs')loadCerts()">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('certs_title')"></h3>
+            <button class="btn-primary btn-sm" @click="showAdd = true" x-text="t('certs_apply')"></button>
+          </div>
+          <div x-show="showAdd" class="card mb-4">
+            <div class="card-body">
+              <div class="grid grid-cols-3 gap-4">
+                <div><label class="label" x-text="t('domain')"></label><input x-model="newCert.domain" class="input" placeholder="example.com"></div>
+                <div class="flex items-end"><label class="flex items-center gap-2"><input type="checkbox" x-model="newCert.auto_renew"> <span x-text="t('certs_auto_renew')"></span></label></div>
+                <div><label class="label" x-text="t('notes')"></label><input x-model="newCert.notes" class="input" :placeholder="t('optional')"></div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <button class="btn-primary btn-sm" @click="addCert()" :disabled="certLoading">
+                  <span x-show="!certLoading" x-text="t('apply')"></span>
+                  <span x-show="certLoading" x-text="t('certs_applying')"></span>
+                </button>
+                <button class="btn-secondary btn-sm" @click="showAdd = false; certLoading = false" :disabled="certLoading" x-text="t('cancel')"></button>
+              </div>
+            </div>
+          </div>
+          <!-- 证书申请进度 -->
+          <div x-show="certLoading && certProgress" class="card mb-4">
+            <div class="card-body">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-medium" x-text="certProgress?.domain"></span>
+                <span class="text-sm" style="color:var(--text-secondary)" x-text="certProgress?.step_name"></span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div class="h-2 rounded-full transition-all duration-300"
+                     :class="certProgress?.error ? 'bg-red-500' : 'bg-blue-500'"
+                     :style="'width:' + ((certProgress?.step || 0) / (certProgress?.total_steps || 9) * 100) + '%'"></div>
+              </div>
+              <p class="text-sm" style="color:var(--text-secondary)" x-text="certProgress?.detail"></p>
+              <p x-show="certProgress?.error" class="text-sm text-red-500 mt-1" x-text="certProgress?.error"></p>
+            </div>
+          </div>
+          <div class="card">
+            <table class="table w-full">
+              <thead><tr><th x-text="t('domain')"></th><th x-text="t('certs_issuer')"></th><th x-text="t('certs_expiry')"></th><th x-text="t('certs_auto_renew')"></th><th x-text="t('status')"></th><th x-text="t('table_actions')"></th></tr></thead>
+              <tbody>
+                <template x-for="c in certs" :key="c.id">
+                  <tr>
+                    <td class="font-medium" x-text="c.domain"></td>
+                    <td x-text="c.issuer || '-'"></td>
+                    <td><span :class="isExpiringSoon(c.expires_at) ? 'text-red-600 font-semibold' : ''" x-text="new Date(c.expires_at).toLocaleDateString('zh-CN')"></span></td>
+                    <td>
+                      <label class="flex items-center gap-1 cursor-pointer">
+                        <input type="checkbox" :checked="c.auto_renew" @change="toggleAutoRenew(c.id, $event.target.checked)" class="w-4 h-4">
+                        <span :class="c.auto_renew ? 'text-green-600' : 'text-gray-400'" x-text="c.auto_renew ? t('on') : t('off')"></span>
+                      </label>
+                    </td>
+                    <td><span :class="isExpiringSoon(c.expires_at) ? 'badge-danger' : 'badge-success'" x-text="isExpiringSoon(c.expires_at) ? t('certs_expiring') : t('certs_normal')"></span></td>
+                    <td>
+                      <div class="flex gap-2">
+                        <button class="btn-secondary btn-sm btn-write" @click="renewCert(c.id)" :disabled="certLoading || c.issuer !== 'ACME'">
+                          <span x-text="c.issuer === 'ACME' ? t('certs_renew') : t('certs_acme_only')"></span>
+                        </button>
+                        <button class="btn-danger btn-sm" @click="deleteCert(c.id, c.domain)" x-text="t('delete')"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Queue -->
+        <div x-show="page === 'queue'" x-data="pageMixins.queue" x-init="loadQueue()" @page-change.window="if($event.detail.page==='queue')loadQueue()">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('queue_title')"></h3>
+            <div class="flex gap-4 text-sm">
+              <span style="color:var(--text-secondary)"><span x-text="t('queue_pending')"></span>: <strong class="text-blue-600" x-text="stats.pending"></strong></span>
+              <span style="color:var(--text-secondary)"><span x-text="t('queue_delivering')"></span>: <strong class="text-yellow-600" x-text="stats.delivering"></strong></span>
+              <span style="color:var(--text-secondary)"><span x-text="t('queue_deferred')"></span>: <strong class="text-red-600" x-text="stats.deferred"></strong></span>
+            </div>
+          </div>
+          <div class="card">
+            <table class="table w-full">
+              <thead><tr><th x-text="t('mail_from')"></th><th x-text="t('mail_to')"></th><th x-text="t('queue_direction')"></th><th x-text="t('status')"></th><th x-text="t('mail_size')"></th><th x-text="t('queue_retry')"></th><th x-text="t('queue_error')"></th><th x-text="t('mail_time')"></th><th x-text="t('table_actions')"></th></tr></thead>
+              <tbody>
+                <template x-for="e in entries" :key="e.id">
+                  <tr>
+                    <td class="text-xs" x-text="e.from_addr"></td>
+                    <td class="text-xs" x-text="e.to_addr"></td>
+                    <td><span :class="e.direction === 'inbound' ? 'badge-info' : 'badge-success'" x-text="e.direction === 'inbound' ? t('queue_inbound') : t('queue_outbound')"></span></td>
+                    <td><span :class="statusBadge(e.status)" x-text="statusText(e.status)"></span></td>
+                    <td x-text="(e.size_bytes / 1024).toFixed(1) + ' KB'"></td>
+                    <td x-text="e.retry_count"></td>
+                    <td class="text-xs text-red-500 max-w-xs">
+                      <template x-if="e.last_error">
+                        <div class="flex items-start gap-1">
+                          <span class="truncate" x-text="e.last_error.substring(0, 40) + '...'" :title="e.last_error"></span>
+                          <button class="flex-shrink-0 p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-400 hover:text-red-600" @click="copyError(e.last_error)" :title="t('queue_copy_error')">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                          </button>
+                        </div>
+                      </template>
+                      <span x-show="!e.last_error">-</span>
+                    </td>
+                    <td class="text-xs" x-text="new Date(e.created_at).toLocaleString('zh-CN')"></td>
+                    <td>
+                      <div class="flex gap-1">
+                        <button x-show="e.status === 'deferred'" class="btn-secondary btn-sm btn-write" @click="retryEntry(e.id)" x-text="t('queue_retry')"></button>
+                        <button class="btn-danger btn-sm" @click="deleteEntry(e.id)" x-text="t('delete')"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Logs -->
+        <div x-show="page === 'logs'" x-data="pageMixins.logs" x-init="init(); loadLogs()" @page-change.window="if($event.detail.page==='logs')loadLogs()">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('logs_title')"></h3>
+            <div class="flex gap-2">
+              <input x-model="search" class="input" style="width:200px" :placeholder="t('logs_search_placeholder')" @keydown.enter="searchLogs()">
+              <select x-model="direction" class="input" style="width:100px" @change="searchLogs()">
+                <option value="" x-text="t('logs_all')"></option>
+                <option value="inbound" x-text="t('queue_inbound')"></option>
+                <option value="outbound" x-text="t('queue_outbound')"></option>
+              </select>
+              <select x-model="status" class="input" style="width:100px" @change="searchLogs()">
+                <option value="" x-text="t('mail_all_status')"></option>
+                <option value="delivered" x-text="t('mail_delivered')"></option>
+                <option value="bounced" x-text="t('mail_bounced')"></option>
+                <option value="blocked" x-text="t('mail_blocked')"></option>
+                <option value="deferred" x-text="t('mail_deferred')"></option>
+              </select>
+              <button class="btn-primary btn-sm" @click="searchLogs()" x-text="t('search')"></button>
+            </div>
+          </div>
+          <div class="card">
+            <table class="table w-full">
+              <thead><tr><th x-text="t('mail_from')"></th><th x-text="t('mail_to')"></th><th x-text="t('queue_direction')"></th><th x-text="t('status')"></th><th x-text="t('mail_size')"></th><th x-text="t('mail_spam_score')"></th><th x-text="t('mail_time')"></th></tr></thead>
+              <tbody>
+                <template x-for="l in logs" :key="l.id">
+                  <tr>
+                    <td class="text-xs" x-text="l.from_addr"></td>
+                    <td class="text-xs" x-text="l.to_addr"></td>
+                    <td><span :class="l.direction === 'inbound' ? 'badge-info' : 'badge-success'" x-text="directionText(l.direction)"></span></td>
+                    <td><span :class="statusBadge(l.status)" x-text="statusText(l.status)"></span>
+                      <div x-show="l.status === 'bounced' && l.reject_reason" class="text-xs mt-1" style="color:#dc2626;max-width:200px;word-break:break-all" x-text="l.reject_reason"></div>
+                    </td>
+                    <td x-text="(l.size_bytes / 1024).toFixed(1) + ' KB'"></td>
+                    <td><span :class="l.spam_score > 5 ? 'text-red-600 font-semibold' : ''" x-text="l.spam_score.toFixed(1)"></span></td>
+                    <td class="text-xs" x-text="formatTime(l.created_at)"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            <div class="flex justify-between items-center p-4" style="border-top:1px solid var(--border)">
+              <span class="text-sm" style="color:var(--text-muted)" x-text="t('mail_total').replace('{total}', total)"></span>
+              <div class="flex gap-2">
+                <button class="btn-secondary btn-sm" :disabled="pageNum <= 1" @click="prevPage()" x-text="t('mail_prev_page')"></button>
+                <span class="text-sm" style="color:var(--text-secondary)" x-text="t('mail_page').replace('{page}', pageNum)"></span>
+                <button class="btn-secondary btn-sm" :disabled="pageNum * pageSize >= total" @click="nextPage()" x-text="t('mail_next_page')"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div x-show="page === 'settings'" x-data="pageMixins.settings" x-init="loadSettings()" @page-change.window="if($event.detail.page==='settings')loadSettings()">
+          <h3 class="text-lg font-semibold mb-4" style="color:var(--text-primary)" x-text="t('settings_title')"></h3>
+          <div class="space-y-4">
+            <!-- 安全配置（专用UI） -->
+            <div class="card">
+              <div class="card-header">
+                <span x-text="t('settings_security')"></span>
+              </div>
+              <div class="card-body space-y-5">
+                <!-- 反垃圾邮件 -->
+                <div>
+                  <h4 class="text-sm font-semibold mb-3" style="color:var(--text-primary)" x-text="t('settings_anti_spam')"></h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="flex items-center gap-3">
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="sec.spam_filter_enabled" class="sr-only peer">
+                        <div class="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" :style="sec.spam_filter_enabled ? 'background:var(--accent)' : 'background:var(--border)'"></div>
+                      </label>
+                      <span class="text-sm" style="color:var(--text-secondary)" x-text="t('settings_spam_filter_enabled')"></span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="sec.rbl_enabled" class="sr-only peer">
+                        <div class="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" :style="sec.rbl_enabled ? 'background:var(--accent)' : 'background:var(--border)'"></div>
+                      </label>
+                      <span class="text-sm" style="color:var(--text-secondary)" x-text="t('settings_rbl_enabled')"></span>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4 mt-3">
+                    <div>
+                      <label class="label" x-text="t('settings_spam_threshold')"></label>
+                      <input type="number" x-model="sec.spam_threshold" step="0.5" min="0" max="20" class="input" style="width:120px">
+                      <span class="text-xs ml-2" style="color:var(--text-muted)" x-text="t('settings_spam_threshold_desc')"></span>
+                    </div>
+                    <div>
+                      <label class="label" x-text="t('settings_spam_action')"></label>
+                      <select x-model="sec.spam_action" class="input" style="width:160px">
+                        <option value="mark" x-text="t('settings_spam_mark')"></option>
+                        <option value="quarantine" x-text="t('settings_spam_quarantine')"></option>
+                        <option value="reject" x-text="t('settings_spam_reject')"></option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="mt-3">
+                    <label class="label" x-text="t('settings_rbl_servers')"></label>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                      <template x-for="(srv, idx) in sec.rbl_servers" :key="idx">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs" style="background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-light)">
+                          <span x-text="srv"></span>
+                          <button @click="removeRblServer(idx)" class="ml-1 hover:text-red-500 font-bold" style="line-height:1">&times;</button>
+                        </span>
+                      </template>
+                    </div>
+                    <div class="flex gap-2">
+                      <input x-model="sec.rbl_new_server" class="input" style="flex:1" :placeholder="t('settings_rbl_placeholder')" @keydown.enter.prevent="addRblServer()">
+                      <button class="btn-secondary text-sm btn-write" @click="addRblServer()" x-text="t('add')"></button>
+                    </div>
+                    <span class="text-xs" style="color:var(--text-muted)" x-text="t('settings_rbl_hint')"></span>
+                  </div>
+                </div>
+
+                <div style="border-top:1px solid var(--border-light);margin:0 -1.5rem;padding:0 1.5rem"></div>
+
+                <!-- 防病毒 -->
+                <div>
+                  <h4 class="text-sm font-semibold mb-3" style="color:var(--text-primary)" x-text="t('settings_antivirus')"></h4>
+                  <div class="flex items-center gap-3 mb-3">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" x-model="sec.virus_scan_enabled" class="sr-only peer">
+                      <div class="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" :style="sec.virus_scan_enabled ? 'background:var(--accent)' : 'background:var(--border)'"></div>
+                    </label>
+                    <span class="text-sm" style="color:var(--text-secondary)" x-text="t('settings_virus_scan_enabled')"></span>
+                  </div>
+                  <div class="mt-3">
+                    <label class="label" x-text="t('settings_scan_mode')"></label>
+                    <select x-model="sec.virus_scan_mode" class="input" style="width:240px">
+                      <option value="clamd_tcp" x-text="t('settings_clamav_tcp')"></option>
+                      <option value="clamd_unix" x-text="t('settings_clamav_unix')"></option>
+                      <option value="command" x-text="t('settings_external_command')"></option>
+                    </select>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4 mt-3">
+                    <!-- ClamAV TCP 配置 -->
+                    <div x-show="sec.virus_scan_mode === 'clamd_tcp'">
+                      <label class="label" x-text="t('settings_clamav_host')"></label>
+                      <input x-model="sec.clamd_tcp_host" class="input" placeholder="127.0.0.1" style="width:140px;display:inline-block">
+                      <span class="mx-1">:</span>
+                      <input x-model="sec.clamd_tcp_port" type="number" class="input" placeholder="3310" style="width:80px;display:inline-block">
+                    </div>
+                    <!-- ClamAV Unix Socket 配置 -->
+                    <div x-show="sec.virus_scan_mode === 'clamd_unix'">
+                      <label class="label" x-text="t('settings_socket_path')"></label>
+                      <input x-model="sec.clamd_unix_path" class="input" placeholder="/var/run/clamav/clamd.ctl" style="width:260px">
+                    </div>
+                    <!-- 外部命令配置 -->
+                    <div x-show="sec.virus_scan_mode === 'command'">
+                      <label class="label" x-text="t('settings_scan_command')"></label>
+                      <input x-model="sec.virus_scan_command" class="input" :placeholder="t('settings_scan_command_hint')" style="width:200px">
+                      <span class="text-xs ml-2" style="color:var(--text-muted)" x-text="t('settings_scan_command_hint')"></span>
+                    </div>
+                    <div>
+                      <label class="label" x-text="t('settings_virus_action')"></label>
+                      <select x-model="sec.virus_action" class="input" style="width:160px">
+                        <option value="reject" x-text="t('settings_spam_reject')"></option>
+                        <option value="quarantine" x-text="t('settings_spam_quarantine')"></option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                  <button class="btn-primary" @click="saveSecurityConfig()" x-text="t('settings_save_security')"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 投递配置 -->
+            <div class="card">
+              <div class="card-header">
+                <span x-text="t('settings_delivery_config')"></span>
+              </div>
+              <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="label" x-text="t('settings_max_retries')"></label>
+                    <input type="number" x-model="del.max_retries" class="input" min="1" max="100" style="width:120px">
+                    <span class="text-xs" style="color:var(--text-muted)" x-text="t('settings_max_retries_hint')"></span>
+                  </div>
+                  <div>
+                    <label class="label" x-text="t('settings_retry_interval')"></label>
+                    <input type="number" x-model="del.retry_interval_sec" class="input" min="10" max="3600" style="width:120px">
+                    <span class="text-xs" style="color:var(--text-muted)" x-text="t('settings_retry_interval_hint')"></span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" x-model="del.skip_bounce_retry" class="sr-only peer">
+                    <div class="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" :style="del.skip_bounce_retry ? 'background:var(--accent)' : 'background:var(--border)'"></div>
+                  </label>
+                  <div>
+                    <span class="text-sm" style="color:var(--text-secondary)" x-text="t('settings_skip_bounce_retry')"></span>
+                    <span class="text-xs block" style="color:var(--text-muted)" x-text="t('settings_skip_bounce_retry_desc')"></span>
+                  </div>
+                </div>
+                <div class="flex justify-end pt-2">
+                  <button class="btn-primary" @click="saveDeliveryConfig()" x-text="t('settings_save_delivery')"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SMTP 邮件大小限制 -->
+            <div class="card">
+              <div class="card-header">
+                <span x-text="t('settings_mail_size_title')"></span>
+              </div>
+              <div class="p-6 space-y-4">
+                <p class="text-sm" style="color:var(--text-muted)" x-text="t('settings_mail_size_hint')"></p>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="label" x-text="t('settings_max_send_size')"></label>
+                    <input type="number" x-model.number="smtpSize.max_send_size_mb" class="input" min="1" max="10240" style="width:160px">
+                    <span class="text-xs" style="color:var(--text-muted)" x-text="t('settings_mb_unit')"></span>
+                  </div>
+                  <div>
+                    <label class="label" x-text="t('settings_max_receive_size')"></label>
+                    <input type="number" x-model.number="smtpSize.max_receive_size_mb" class="input" min="1" max="10240" style="width:160px">
+                    <span class="text-xs" style="color:var(--text-muted)" x-text="t('settings_mb_unit')"></span>
+                  </div>
+                </div>
+                <div>
+                  <label class="label" x-text="t('settings_max_recipients')"></label>
+                  <input type="number" x-model.number="smtpSize.max_recipients" class="input" min="1" max="10000" style="width:160px">
+                  <span class="text-xs" style="color:var(--text-muted)" x-text="t('settings_max_recipients_hint')"></span>
+                </div>
+                <div>
+                  <label class="label" x-text="t('settings_max_attachment_size')"></label>
+                  <input type="number" x-model.number="smtpSize.max_attachment_size_mb" class="input" min="1" max="2048" style="width:160px">
+                  <span class="text-xs" style="color:var(--text-muted)" x-text="t('settings_max_attachment_size_hint')"></span>
+                </div>
+                <div class="flex justify-end pt-2">
+                  <button class="btn-primary" @click="saveSmtpSizeConfig()" x-text="t('save')"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Webmail 限流设置 -->
+            <div class="card">
+              <div class="card-header">
+                <span x-text="t('settings_rate_limit')"></span>
+              </div>
+              <div class="p-6 space-y-4">
+                <p class="text-sm" style="color:var(--text-muted)" x-text="t('settings_rate_limit_hint')"></p>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="label" x-text="t('settings_rate_attempt_window')"></label>
+                    <input type="number" x-model.number="rateLimit.attempt_window_secs" class="input" min="10" max="3600" style="width:160px">
+                    <span class="text-xs" style="color:var(--text-muted)">秒</span>
+                  </div>
+                  <div>
+                    <label class="label" x-text="t('settings_rate_block_duration')"></label>
+                    <input type="number" x-model.number="rateLimit.block_duration_secs" class="input" min="5" max="3600" style="width:160px">
+                    <span class="text-xs" style="color:var(--text-muted)">秒</span>
+                  </div>
+                  <div>
+                    <label class="label" x-text="t('settings_rate_login_max')"></label>
+                    <input type="number" x-model.number="rateLimit.login_max_per_window" class="input" min="1" max="100" style="width:160px">
+                  </div>
+                  <div>
+                    <label class="label" x-text="t('settings_rate_register_max')"></label>
+                    <input type="number" x-model.number="rateLimit.register_max_per_window" class="input" min="1" max="100" style="width:160px">
+                  </div>
+                  <div>
+                    <label class="label" x-text="t('settings_rate_register_success_max')"></label>
+                    <input type="number" x-model.number="rateLimit.register_success_max_per_window" class="input" min="1" max="100" style="width:160px">
+                  </div>
+                </div>
+                <div class="flex justify-end pt-2">
+                  <button class="btn-primary" @click="saveRateLimitConfig()" x-text="t('save')"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 时区设置 -->
+            <div class="card">
+              <div class="card-header">
+                <span x-text="t('settings_timezone')"></span>
+              </div>
+              <div class="p-6 space-y-4">
+                <div>
+                  <label class="label" x-text="t('settings_timezone_server')"></label>
+                  <select x-model="tz.name" @change="onTimezoneChange()" class="input" style="width:320px">
+                    <template x-for="opt in timezoneOptions" :key="opt.name">
+                      <option :value="opt.name" x-text="tzLabel(opt)"></option>
+                    </template>
+                  </select>
+                  <span class="text-xs block mt-1" style="color:var(--text-muted)" x-text="t('settings_timezone_hint')"></span>
+                </div>
+                <div>
+                  <label class="label" x-text="t('settings_timezone_offset')"></label>
+                  <span class="text-sm font-mono" x-text="tz.offset"></span>
+                </div>
+                <div class="flex justify-end pt-2">
+                  <button class="btn-primary" @click="saveTimezoneConfig()" x-text="t('settings_save_timezone')"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 语言设置 -->
+            <div class="card">
+              <div class="card-header">
+                <span x-text="t('settings_language')"></span>
+              </div>
+              <div class="p-6 space-y-4">
+                <div>
+                  <label class="label" x-text="t('settings_language_label')"></label>
+                  <select x-model="langForm.current" class="input" style="width:320px">
+                    <template x-for="opt in languageOptions" :key="opt.code">
+                      <option :value="opt.code" x-text="opt.label"></option>
+                    </template>
+                  </select>
+                  <span class="text-xs block mt-1" style="color:var(--text-muted)" x-text="t('settings_language_hint')"></span>
+                </div>
+                <div class="flex justify-end pt-2">
+                  <button class="btn-primary" @click="saveLanguageConfig()" x-text="t('settings_save_language')"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 其他设置（JSON编辑） -->
+            <template x-for="s in otherSettings" :key="s.key">
+              <div class="card">
+                <div class="card-header">
+                  <span x-text="settingLabel(s.key)"></span>
+                  <button x-show="editKey !== s.key" class="btn-secondary btn-sm" @click="startEdit(s)" x-text="t('edit')"></button>
+                </div>
+                <div class="card-body">
+                  <div x-show="editKey !== s.key">
+                    <pre class="text-xs whitespace-pre-wrap" style="color:var(--text-secondary)" x-text="formatValue(s.value)"></pre>
+                  </div>
+                  <div x-show="editKey === s.key">
+                    <textarea x-model="editValue" class="input" rows="6" style="font-family:monospace;font-size:12px"></textarea>
+                    <div class="flex gap-2 mt-2">
+                      <button class="btn-primary btn-sm" @click="saveSetting(s.key)" x-text="t('save')"></button>
+                      <button class="btn-secondary btn-sm" @click="cancelEdit()" x-text="t('cancel')"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Accounts -->
+        <div x-show="page === 'accounts'" x-data="pageMixins.accounts" x-init="init(); loadUsers()" @page-change.window="if($event.detail.page==='accounts')loadUsers()">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold" style="color:var(--text-primary)" x-text="t('accounts_title')"></h3>
+            <button class="btn-primary btn-sm btn-write" @click="showAdd = true" x-text="t('accounts_add_user')"></button>
+          </div>
+          <div x-show="showAdd" class="card mb-4">
+            <div class="card-body">
+              <div class="grid grid-cols-3 gap-4">
+                <div><label class="label" x-text="t('accounts_username')"></label><input x-model="newUser.username" class="input"></div>
+                <div><label class="label" x-text="t('password')"></label><input x-model="newUser.password" type="password" class="input"></div>
+                <div><label class="label" x-text="t('accounts_role')"></label><select x-model="newUser.role" class="input"><option value="admin" x-text="t('accounts_admin')"></option><option value="viewer" x-text="t('accounts_viewer')"></option></select></div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <button class="btn-primary btn-sm" @click="addUser()" x-text="t('add')"></button>
+                <button class="btn-secondary btn-sm" @click="showAdd = false" x-text="t('cancel')"></button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <table class="table w-full">
+              <thead><tr><th x-text="t('accounts_username')"></th><th x-text="t('accounts_role')"></th><th x-text="t('status')"></th><th x-text="t('accounts_created')"></th><th x-text="t('table_actions')"></th></tr></thead>
+              <tbody>
+                <template x-for="u in users" :key="u.id">
+                  <tr>
+                    <td class="font-medium" x-text="u.username"></td>
+                    <td x-text="u.role === 'admin' ? t('accounts_admin') : t('accounts_viewer')"></td>
+                    <td><span :class="u.enabled ? 'badge-success' : 'badge-danger'" x-text="u.enabled ? t('accounts_enabled') : t('accounts_disabled')"></span></td>
+                    <td x-text="new Date(u.created_at).toLocaleDateString('zh-CN')"></td>
+                    <td>
+                      <div class="flex gap-2">
+                        <button class="btn-secondary btn-sm btn-write" @click="startEdit(u)" x-text="t('edit')"></button>
+                        <button class="btn-secondary btn-sm btn-write" @click="resetPassword(u.id)" x-text="t('accounts_reset_password')"></button>
+                        <button class="btn-danger btn-sm btn-write" @click="deleteUser(u.id, u.username)" x-text="t('delete')"></button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 编辑用户 -->
+          <div x-show="editingId" class="card mb-4">
+            <div class="card-body">
+              <h4 class="text-sm font-semibold mb-3" style="color:var(--text-primary)" x-text="t('accounts_edit_user')"></h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="label" x-text="t('accounts_role')"></label>
+                  <select x-model="editForm.role" class="input">
+                    <option value="admin" x-text="t('accounts_admin')"></option>
+                    <option value="viewer" x-text="t('accounts_viewer')"></option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label" x-text="t('status')"></label>
+                  <select x-model="editForm.enabled" class="input">
+                    <option :value="true" x-text="t('accounts_enabled')"></option>
+                    <option :value="false" x-text="t('accounts_disabled')"></option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex justify-end gap-3 mt-4">
+                <button class="btn-secondary btn-sm" @click="editingId = null" x-text="t('cancel')"></button>
+                <button class="btn-primary btn-sm" @click="saveEdit(editingId)" x-text="t('save')"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div x-show="toastShow" x-transition class="toast" :class="'toast-' + toastType" x-text="toastMsg" style="position:fixed;top:1rem;right:1rem;z-index:50"></div>
+
+  <style>[x-cloak]{display:none!important}</style>
+  <script src="src/vendor/tailwind.min.js"></script>
+  <script src="src/vendor/alpinejs.min.js" defer></script>
+  <script src="src/vendor/echarts.min.js"></script>
+  <script src="src/vendor/i18n.js"></script>
+  <script>
+    // i18n fallback: 如果 i18n.js 未加载成功，提供默认实现
+    if (typeof window.t !== 'function') {
+      window.t = function(k) { return k; };
+      window.setLang = function() {};
+      window.getLang = function() { return 'zh'; };
+    }
+  </script>
+  <script src="src/api.js"></script>
+  <script src="src/router.js"></script>
+  <script src="src/pages/dashboard.js"></script>
+  <script src="src/pages/domains.js"></script>
+  <script src="src/pages/mailboxes.js"></script>
+  <script src="src/pages/mail.js"></script>
+  <script src="src/pages/certs.js"></script>
+  <script src="src/pages/queue.js"></script>
+  <script src="src/pages/logs.js"></script>
+  <script src="src/pages/settings.js"></script>
+  <script src="src/pages/accounts.js"></script>
+  <script>
+    function app() {
+      return {
+        // i18n
+        t(key) { return (window.translations[this.lang] && window.translations[this.lang][key]) || key; },
+        lang: getLang(),
+        langOpen: false,
+
+        page: 'login',
+        pageTitle: t('login'),
+        mailMenuOpen: false,
+        darkMode: localStorage.getItem('funmail_dark') === 'true',
+        loginUser: '',
+        loginPass: '',
+        loginLoading: false,
+        username: '',
+        adminRole: localStorage.getItem('funmail_role') || 'admin',
+        appVersion: localStorage.getItem('funmail_version') || '0.1.0',
+        get isViewer() { return this.adminRole === 'viewer'; },
+
+        // 只读用户操作拦截
+        guardWrite() {
+          if (this.isViewer) {
+            this.showToast(t('viewer_write_denied'), 'error');
+            return true;
+          }
+          return false;
+        },
+        toastShow: false,
+        toastMsg: '',
+        toastType: 'success',
+        _toastTimer: null,
+
+        init() {
+          if (this.darkMode) document.documentElement.classList.add('dark');
+          const token = localStorage.getItem('funmail_token');
+          if (token) {
+            api.token = token;
+            this.username = localStorage.getItem('funmail_user') || '';
+            const path = window.location.pathname;
+            this.navigate(path === '/' || path === '/login' ? '/dashboard' : path);
+          } else {
+            this.navigate('/login');
+          }
+          window.addEventListener('lang-changed', (e) => {
+            this.lang = e.detail.lang;
+          });
+        },
+
+        navigate(path) {
+          const route = router.matchRouteByPath(path);
+          if (route) {
+            this.page = route.page;
+            this.pageTitle = route.title;
+            history.pushState(null, '', path);
+            window.dispatchEvent(new CustomEvent('page-change', { detail: { page: route.page } }));
+          } else {
+            this.navigate('/dashboard');
+          }
+        },
+
+        onRouteChange() {
+          const path = window.location.pathname;
+          const route = router.matchRouteByPath(path);
+          if (route) {
+            this.page = route.page;
+            this.pageTitle = route.title;
+            window.dispatchEvent(new CustomEvent('page-change', { detail: { page: route.page } }));
+          }
+        },
+
+        async doLogin() {
+          this.loginLoading = true;
+          try {
+            const data = await api.post('/auth/login', { username: this.loginUser, password: this.loginPass });
+            api.setToken(data.token);
+            this.username = data.username;
+            this.adminRole = data.role || 'admin';
+            localStorage.setItem('funmail_user', data.username);
+            localStorage.setItem('funmail_role', this.adminRole);
+            // 获取版本号
+            try {
+              const info = await api.get('/system/info');
+              this.appVersion = info.version || '0.1.0';
+              localStorage.setItem('funmail_version', this.appVersion);
+            } catch {}
+            this.navigate('/dashboard');
+          } catch (e) {
+            this.showToast(e.message, 'error');
+          } finally {
+            this.loginLoading = false;
+          }
+        },
+
+        doLogout() {
+          api.clearToken();
+          localStorage.removeItem('funmail_user');
+          this.navigate('/login');
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('funmail_dark', this.darkMode);
+          if (this.darkMode) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        },
+
+        switchLang(lang) {
+          setLang(lang);
+          this.lang = lang;
+          const route = router.routes.find(r => r.page === this.page);
+          if (route) this.pageTitle = this.t(route.titleKey);
+          window.dispatchEvent(new CustomEvent('lang-changed', { detail: { lang } }));
+        },
+
+        showToast(msg, type) {
+          this.toastMsg = msg;
+          this.toastType = type || 'success';
+          this.toastShow = true;
+          if (this._toastTimer) clearTimeout(this._toastTimer);
+          this._toastTimer = setTimeout(() => { this.toastShow = false; }, 3000);
+        }
+      };
+    }
+  </script>
+</body>
+</html>

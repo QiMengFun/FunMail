@@ -1,0 +1,38 @@
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+
+# Docker
+docker/data/
+docker/logs/
+
+# Environment & secrets
+.env
+.env.*
+*.key
+*.pem
+*.crt
+*.p12
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Scripts
+*.sh
+*.bat
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite

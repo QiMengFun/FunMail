@@ -1,0 +1,31 @@
+[package]
+name = "funmail-delivery"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+funmail-common = { workspace = true }
+tokio = { workspace = true }
+sqlx = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+mail-parser = { workspace = true }
+mail-builder = { workspace = true }
+hickory-resolver = { workspace = true }
+rsa = { workspace = true }
+ed25519-dalek = { workspace = true }
+sha2 = { workspace = true }
+hmac = { workspace = true }
+base64 = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+chrono = { workspace = true }
+dashmap = { workspace = true }
+lettre = { workspace = true }
+reqwest = { workspace = true }
+uuid = { workspace = true }
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+rustls-native-certs = "0.8"
