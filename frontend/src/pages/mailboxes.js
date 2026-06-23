@@ -145,7 +145,12 @@ window.pageMixins.mailboxes = {
       quota_mb: m.quota_mb,
       enabled: m.enabled,
       keep_copy: m.keep_copy,
-      is_admin: m.is_admin,
+      is_admin: m.is_admin === true || m.is_admin === 'true',
+      max_mail_per_day: m.max_mail_per_day || 0,
+      max_send_size_mb: m.max_send_size_mb || 0,
+      max_receive_size_mb: m.max_receive_size_mb || 0,
+      max_aliases: m.max_aliases || 0,
+      max_forwarders: m.max_forwarders || 0,
     };
   },
 

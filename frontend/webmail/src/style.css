@@ -36,17 +36,17 @@
   --login-gradient: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
 }
 
-/* === 暗色主题 === */
+/* === 暗色主题（与管理后台保持一致） === */
 [data-theme="dark"] {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-2: #162032;
-  --surface-3: #0f172a;
-  --border: #2d3a4f;
-  --border-light: #1e293b;
-  --text: #e2e8f0;
-  --text-secondary: #a0aec0;
-  --text-muted: #64748b;
+  --bg: rgb(24, 24, 24);
+  --surface: rgb(39, 39, 39);
+  --surface-2: rgb(30, 30, 30);
+  --surface-3: rgb(24, 24, 24);
+  --border: rgb(57, 57, 57);
+  --border-light: rgb(39, 39, 39);
+  --text: rgb(230, 230, 230);
+  --text-secondary: rgb(160, 160, 160);
+  --text-muted: rgb(110, 110, 110);
   --primary: #60a5fa;
   --primary-hover: #93c5fd;
   --primary-soft: rgba(96,165,250,.12);
@@ -54,20 +54,20 @@
   --success: #34d399;
   --warning: #fbbf24;
   --danger: #f87171;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
   --shadow-md: 0 4px 12px rgba(0,0,0,.4);
-  --bg-card: #1e293b;
-  --bg-hover: #263244;
-  --bg-input: #162032;
-  --border-input: #2d3a4f;
-  --text-primary: #e2e8f0;
-  --sidebar-bg: #1e293b;
-  --topbar-bg: #1e293b;
-  --detail-bg: #1e293b;
+  --bg-card: rgb(39, 39, 39);
+  --bg-hover: rgb(50, 50, 50);
+  --bg-input: rgb(57, 57, 57);
+  --border-input: rgb(57, 57, 57);
+  --text-primary: rgb(230, 230, 230);
+  --sidebar-bg: rgb(39, 39, 39);
+  --topbar-bg: rgb(39, 39, 39);
+  --detail-bg: rgb(39, 39, 39);
   --list-active: rgba(96,165,250,.12);
-  --list-hover: #263244;
+  --list-hover: rgb(50, 50, 50);
   --overlay: rgba(0,0,0,.7);
-  --login-gradient: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 100%);
+  --login-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

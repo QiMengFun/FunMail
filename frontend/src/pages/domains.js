@@ -77,6 +77,7 @@ window.pageMixins.domains = {
     this.registerConfigText = JSON.stringify(d.register_config || {}, null, 2);
     this.registerConfigError = '';
     this.registerConfigTab = 'form';
+    this.initCfgForm();
     this.showRegisterPanel = true;
   },
 

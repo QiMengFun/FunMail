@@ -588,30 +588,30 @@
           <div x-show="showRegisterPanel" x-cloak class="fixed inset-0 z-50" @keydown.escape.window="closeRegisterPanel()">
             <div class="absolute inset-0 bg-black/40" @click="closeRegisterPanel()"></div>
             <div class="absolute right-0 top-0 bottom-0 w-full max-w-md shadow-2xl flex flex-col"
-                 style="background:#ffffff; color:#111827; animation: slideInRight .25s ease">
-              <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color:#e5e7eb">
+                 style="background:var(--bg-card); color:var(--text-primary); animation: slideInRight .25s ease">
+              <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color:var(--border)">
                 <div>
-                  <h3 class="text-base font-semibold" style="color:#111827" x-text="t('domains_register_config')"></h3>
-                  <p class="text-xs" style="color:#6b7280" x-text="registerDomain ? registerDomain.name : ''"></p>
+                  <h3 class="text-base font-semibold" style="color:var(--text-primary)" x-text="t('domains_register_config')"></h3>
+                  <p class="text-xs" style="color:var(--text-muted)" x-text="registerDomain ? registerDomain.name : ''"></p>
                 </div>
                 <button class="btn-secondary btn-sm" @click="closeRegisterPanel()" x-text="t('close')"></button>
               </div>
-              <div class="border-b flex" style="border-color:#e5e7eb">
+              <div class="border-b flex" style="border-color:var(--border)">
                 <button class="px-4 py-2 text-sm" :class="registerConfigTab === 'form' ? 'border-b-2 font-semibold' : ''"
-                        :style="registerConfigTab === 'form' ? 'color:#2563eb; border-color:#2563eb' : 'color:#6b7280'"
+                        :style="registerConfigTab === 'form' ? 'color:var(--accent); border-color:var(--accent)' : 'color:var(--text-muted)'"
                         @click="registerConfigTab='form'; initCfgForm()" x-text="t('domains_register_form')"></button>
                 <button class="px-4 py-2 text-sm" :class="registerConfigTab === 'json' ? 'border-b-2 font-semibold' : ''"
-                        :style="registerConfigTab === 'json' ? 'color:#2563eb; border-color:#2563eb' : 'color:#6b7280'"
+                        :style="registerConfigTab === 'json' ? 'color:var(--accent); border-color:var(--accent)' : 'color:var(--text-muted)'"
                         @click="registerConfigTab='json'" x-text="t('domains_register_json')"></button>
               </div>
               <div class="flex-1 overflow-y-auto px-5 py-4">
                 <!-- 表单模式 -->
                 <div x-show="registerConfigTab === 'form'" x-init="initCfgForm()">
                   <div class="space-y-3">
-                    <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                    <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
                       <div>
-                        <div class="text-sm font-medium" style="color:#111827" x-text="t('domains_register_enabled')"></div>
-                        <div class="text-xs" style="color:#6b7280" x-text="t('domains_register_desc')"></div>
+                        <div class="text-sm font-medium" style="color:var(--text-primary)" x-text="t('domains_register_enabled')"></div>
+                        <div class="text-xs" style="color:var(--text-muted)" x-text="t('domains_register_desc')"></div>
                       </div>
                       <input type="checkbox" x-model="_cfgForm.enabled" class="rounded">
                     </label>
@@ -622,20 +622,20 @@
                     <div>
                       <div class="label mb-2" x-text="t('domains_register_protocols')"></div>
                       <div class="space-y-2">
-                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                          <span class="text-sm" style="color:#111827" x-text="t('domains_register_allow_smtp')"></span>
+                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                          <span class="text-sm" style="color:var(--text-primary)" x-text="t('domains_register_allow_smtp')"></span>
                           <input type="checkbox" x-model="_cfgForm.allow_smtp" class="rounded">
                         </label>
-                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                          <span class="text-sm" style="color:#111827" x-text="t('domains_register_allow_pop3')"></span>
+                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                          <span class="text-sm" style="color:var(--text-primary)" x-text="t('domains_register_allow_pop3')"></span>
                           <input type="checkbox" x-model="_cfgForm.allow_pop3" class="rounded">
                         </label>
-                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                          <span class="text-sm" style="color:#111827" x-text="t('domains_register_allow_imap')"></span>
+                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                          <span class="text-sm" style="color:var(--text-primary)" x-text="t('domains_register_allow_imap')"></span>
                           <input type="checkbox" x-model="_cfgForm.allow_imap" class="rounded">
                         </label>
-                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                          <span class="text-sm" style="color:#111827" x-text="t('domains_register_allow_forward')"></span>
+                        <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                          <span class="text-sm" style="color:var(--text-primary)" x-text="t('domains_register_allow_forward')"></span>
                           <input type="checkbox" x-model="_cfgForm.allow_forward" class="rounded">
                         </label>
                       </div>
@@ -644,7 +644,7 @@
                       <label class="block">
                         <span class="label" x-text="t('domains_max_aliases')"></span>
                         <input type="number" x-model.number="_cfgForm.max_aliases" class="input" min="0">
-                        <span class="text-xs" style="color:#6b7280" x-text="t('domains_unlimited')"></span>
+                        <span class="text-xs" style="color:var(--text-muted)" x-text="t('domains_unlimited')"></span>
                       </label>
                       <label class="block">
                         <span class="label" x-text="t('domains_max_forwarders')"></span>
@@ -656,18 +656,18 @@
                       </label>
                     </div>
                     <div class="space-y-2">
-                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
                         <div>
-                          <div class="text-sm font-medium" style="color:#111827" x-text="t('domains_captcha_required')"></div>
-                          <div class="text-xs" style="color:#6b7280" x-text="t('domains_captcha_desc')"></div>
+                          <div class="text-sm font-medium" style="color:var(--text-primary)" x-text="t('domains_captcha_required')"></div>
+                          <div class="text-xs" style="color:var(--text-muted)" x-text="t('domains_captcha_desc')"></div>
                         </div>
                         <input type="checkbox" x-model="_cfgForm.captcha_required" class="rounded">
                       </label>
                     </div>
 
                     <!-- 邮件大小限制覆盖 -->
-                    <div class="p-3 rounded-lg space-y-3" style="background:#f3f4f6">
-                      <div class="text-sm font-medium" style="color:#111827" x-text="t('settings_mail_size_title')"></div>
+                    <div class="p-3 rounded-lg space-y-3" style="background:var(--bg-hover)">
+                      <div class="text-sm font-medium" style="color:var(--text-primary)" x-text="t('settings_mail_size_title')"></div>
                       <div class="grid grid-cols-2 gap-3">
                         <div>
                           <label class="label" x-text="t('domains_max_send_size')"></label>
@@ -678,10 +678,10 @@
                           <input type="number" x-model.number="_cfgForm.max_receive_size_mb" class="input" min="1" max="10240" placeholder="" style="width:120px">
                         </div>
                       </div>
-                      <div class="text-xs" style="color:#6b7280" x-text="t('domains_size_hint')"></div>
+                      <div class="text-xs" style="color:var(--text-muted)" x-text="t('domains_size_hint')"></div>
                     </div>
 
-                    <div class="text-xs p-3 rounded-lg" style="color:#6b7280; background:#f3f4f6" x-text="t('domains_register_note')"></div>
+                    <div class="text-xs p-3 rounded-lg" style="color:var(--text-muted); background:var(--bg-hover)" x-text="t('domains_register_note')"></div>
                   </div>
                 </div>
                 <!-- JSON 高级模式 -->
@@ -829,6 +829,34 @@
                   </select>
                 </div>
               </div>
+              <!-- 限制设置 -->
+              <div class="grid grid-cols-5 gap-4 mt-4 pt-4" style="border-top:1px solid var(--border)">
+                <div>
+                  <label class="label" x-text="t('mailboxes_max_mail_per_day')"></label>
+                  <input type="number" x-model.number="editForm.max_mail_per_day" class="input" min="0">
+                  <span class="text-xs" style="color:var(--text-muted)" x-text="t('mailboxes_inherit_hint')"></span>
+                </div>
+                <div>
+                  <label class="label" x-text="t('mailboxes_max_send_size')"></label>
+                  <input type="number" x-model.number="editForm.max_send_size_mb" class="input" min="0">
+                  <span class="text-xs" style="color:var(--text-muted)">MB</span>
+                </div>
+                <div>
+                  <label class="label" x-text="t('mailboxes_max_receive_size')"></label>
+                  <input type="number" x-model.number="editForm.max_receive_size_mb" class="input" min="0">
+                  <span class="text-xs" style="color:var(--text-muted)">MB</span>
+                </div>
+                <div>
+                  <label class="label" x-text="t('mailboxes_max_aliases')"></label>
+                  <input type="number" x-model.number="editForm.max_aliases" class="input" min="0">
+                  <span class="text-xs" style="color:var(--text-muted)" x-text="t('mailboxes_inherit_hint')"></span>
+                </div>
+                <div>
+                  <label class="label" x-text="t('mailboxes_max_forwarders')"></label>
+                  <input type="number" x-model.number="editForm.max_forwarders" class="input" min="0">
+                  <span class="text-xs" style="color:var(--text-muted)" x-text="t('mailboxes_inherit_hint')"></span>
+                </div>
+              </div>
               <div class="flex justify-end gap-3 mt-4">
                 <button class="btn-secondary btn-sm" @click="editingId = null" x-text="t('cancel')"></button>
                 <button class="btn-primary btn-sm" @click="saveEdit(editingId)" x-text="t('save')"></button>
@@ -840,68 +868,68 @@
           <div x-show="showProtoPanel" x-cloak class="fixed inset-0 z-50" @keydown.escape.window="closeProtoPanel()">
             <div class="absolute inset-0 bg-black/40" @click="closeProtoPanel()"></div>
             <div class="absolute right-0 top-0 bottom-0 w-full max-w-md shadow-2xl flex flex-col"
-                 style="background:#ffffff; color:#111827; animation: slideInRight .25s ease">
-              <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color:#e5e7eb">
+                 style="background:var(--bg-card); color:var(--text-primary); animation: slideInRight .25s ease">
+              <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color:var(--border)">
                 <div>
-                  <h3 class="text-base font-semibold" style="color:#111827" x-text="t('mailboxes_proto_config')"></h3>
-                  <p class="text-xs" style="color:#6b7280" x-text="protoMailbox ? (protoMailbox.username + '@' + protoMailbox.domain_name) : ''"></p>
+                  <h3 class="text-base font-semibold" style="color:var(--text-primary)" x-text="t('mailboxes_proto_config')"></h3>
+                  <p class="text-xs" style="color:var(--text-muted)" x-text="protoMailbox ? (protoMailbox.username + '@' + protoMailbox.domain_name) : ''"></p>
                 </div>
                 <button class="btn-secondary btn-sm" @click="closeProtoPanel()" x-text="t('close')"></button>
               </div>
-              <div class="border-b flex" style="border-color:#e5e7eb">
+              <div class="border-b flex" style="border-color:var(--border)">
                 <button class="px-4 py-2 text-sm" :class="protoTab === 'form' ? 'border-b-2 font-semibold' : ''"
-                        :style="protoTab === 'form' ? 'color:#2563eb; border-color:#2563eb' : 'color:#6b7280'"
+                        :style="protoTab === 'form' ? 'color:var(--accent); border-color:var(--accent)' : 'color:var(--text-muted)'"
                         @click="switchProtoTab('form')" x-text="t('domains_register_form')"></button>
                 <button class="px-4 py-2 text-sm" :class="protoTab === 'json' ? 'border-b-2 font-semibold' : ''"
-                        :style="protoTab === 'json' ? 'color:#2563eb; border-color:#2563eb' : 'color:#6b7280'"
+                        :style="protoTab === 'json' ? 'color:var(--accent); border-color:var(--accent)' : 'color:var(--text-muted)'"
                         @click="switchProtoTab('json')" x-text="t('domains_register_json')"></button>
               </div>
               <div class="flex-1 overflow-y-auto px-5 py-4">
                 <!-- 表单模式 -->
                 <div x-show="protoTab === 'form'">
                   <div class="space-y-3">
-                    <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
+                    <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
                       <div>
-                        <div class="text-sm font-medium" style="color:#111827" x-text="t('mailboxes_inherit_domain')"></div>
-                        <div class="text-xs" style="color:#6b7280" x-text="t('mailboxes_inherit_domain_desc')"></div>
+                        <div class="text-sm font-medium" style="color:var(--text-primary)" x-text="t('mailboxes_inherit_domain')"></div>
+                        <div class="text-xs" style="color:var(--text-muted)" x-text="t('mailboxes_inherit_domain_desc')"></div>
                       </div>
                       <input type="checkbox" x-model="protoForm.inherit" class="rounded">
                     </label>
                     <div :style="protoForm.inherit ? 'opacity:0.55; pointer-events:none' : ''" class="space-y-2">
-                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_smtp')"></span>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                        <span class="text-sm" style="color:var(--text-primary)" x-text="t('mailboxes_allow_smtp')"></span>
                         <input type="checkbox" x-model="protoForm.smtp" :disabled="protoForm.inherit" class="rounded">
                       </label>
-                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_pop3')"></span>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                        <span class="text-sm" style="color:var(--text-primary)" x-text="t('mailboxes_allow_pop3')"></span>
                         <input type="checkbox" x-model="protoForm.pop3" :disabled="protoForm.inherit" class="rounded">
                       </label>
-                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_imap')"></span>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                        <span class="text-sm" style="color:var(--text-primary)" x-text="t('mailboxes_allow_imap')"></span>
                         <input type="checkbox" x-model="protoForm.imap" :disabled="protoForm.inherit" class="rounded">
                       </label>
-                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_forward')"></span>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                        <span class="text-sm" style="color:var(--text-primary)" x-text="t('mailboxes_allow_forward')"></span>
                         <input type="checkbox" x-model="protoForm.forward" :disabled="protoForm.inherit" class="rounded">
                       </label>
-                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:#f3f4f6">
-                        <span class="text-sm" style="color:#111827" x-text="t('mailboxes_allow_webmail')"></span>
+                      <label class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-hover)">
+                        <span class="text-sm" style="color:var(--text-primary)" x-text="t('mailboxes_allow_webmail')"></span>
                         <input type="checkbox" x-model="protoForm.webmail" :disabled="protoForm.inherit" class="rounded">
                       </label>
                     </div>
-                    <div class="text-xs p-3 rounded-lg" style="color:#6b7280; background:#f3f4f6" x-text="t('mailboxes_proto_note')"></div>
+                    <div class="text-xs p-3 rounded-lg" style="color:var(--text-muted); background:var(--bg-hover)" x-text="t('mailboxes_proto_note')"></div>
                   </div>
                 </div>
                 <!-- JSON 模式 -->
                 <div x-show="protoTab === 'json'">
-                  <div class="text-xs mb-2" style="color:#6b7280" x-text="t('mailboxes_proto_json_note')"></div>
+                  <div class="text-xs mb-2" style="color:var(--text-muted)" x-text="t('mailboxes_proto_json_note')"></div>
                   <textarea x-model="protoText" class="input font-mono text-xs"
                             style="width:100%; min-height: 300px; font-family: 'Cascadia Code', monospace; resize: vertical;"
                             @input="syncProtoFromText()"></textarea>
                   <div x-show="protoError" class="text-xs mt-2" style="color:#dc2626" x-text="protoError"></div>
                 </div>
               </div>
-              <div class="px-5 py-3 border-t flex justify-end gap-2" style="border-color:#e5e7eb">
+              <div class="px-5 py-3 border-t flex justify-end gap-2" style="border-color:var(--border)">
                 <button class="btn-secondary btn-sm" @click="closeProtoPanel()" x-text="t('cancel')"></button>
                 <button class="btn-primary btn-sm" @click="saveProto()" x-text="t('save')"></button>
               </div>

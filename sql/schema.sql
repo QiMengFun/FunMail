@@ -77,6 +77,16 @@ CREATE TABLE IF NOT EXISTS mailboxes (
     protocols JSONB DEFAULT NULL,
     -- token 版本号：每次修改密码/禁用/删除时递增，使旧 JWT 失效
     token_version INTEGER DEFAULT 0,
+    -- 每日发件数限制（0 = 继承域名默认值）
+    max_mail_per_day INTEGER DEFAULT 0,
+    -- 单封发送邮件大小上限 MB（0 = 继承全局配置）
+    max_send_size_mb INTEGER DEFAULT 0,
+    -- 单封接收邮件大小上限 MB（0 = 继承全局配置）
+    max_receive_size_mb INTEGER DEFAULT 0,
+    -- 最大别名数（0 = 继承域名默认值）
+    max_aliases INTEGER DEFAULT 0,
+    -- 最大转发数（0 = 继承域名默认值）
+    max_forwarders INTEGER DEFAULT 0,
     -- 最后登录
     last_login_at TIMESTAMPTZ,
     last_login_ip VARCHAR(45),
@@ -180,6 +190,13 @@ ALTER TABLE mailboxes ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 0;
 
 -- 补充 admin_users.token_version 字段（管理员改密码/禁用后旧 JWT 立即失效）
 ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 0;
+
+-- 补充 mailboxes 限制字段（升级兼容）
+ALTER TABLE mailboxes ADD COLUMN IF NOT EXISTS max_mail_per_day INTEGER DEFAULT 0;
+ALTER TABLE mailboxes ADD COLUMN IF NOT EXISTS max_send_size_mb INTEGER DEFAULT 0;
+ALTER TABLE mailboxes ADD COLUMN IF NOT EXISTS max_receive_size_mb INTEGER DEFAULT 0;
+ALTER TABLE mailboxes ADD COLUMN IF NOT EXISTS max_aliases INTEGER DEFAULT 0;
+ALTER TABLE mailboxes ADD COLUMN IF NOT EXISTS max_forwarders INTEGER DEFAULT 0;
 
 -- 每小时统计
 CREATE TABLE IF NOT EXISTS hourly_stats (

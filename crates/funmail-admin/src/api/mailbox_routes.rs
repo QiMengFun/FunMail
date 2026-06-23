@@ -21,6 +21,16 @@ pub struct MailboxResponse {
     pub is_admin: bool,
     /// 协议权限（null = 继承域名策略；对象 = 覆盖）
     pub protocols: Option<serde_json::Value>,
+    /// 每日发件数限制（0 = 继承域名默认值）
+    pub max_mail_per_day: i32,
+    /// 单封发送邮件大小上限 MB（0 = 继承全局配置）
+    pub max_send_size_mb: i32,
+    /// 单封接收邮件大小上限 MB（0 = 继承全局配置）
+    pub max_receive_size_mb: i32,
+    /// 最大别名数（0 = 继承域名默认值）
+    pub max_aliases: i32,
+    /// 最大转发数（0 = 继承域名默认值）
+    pub max_forwarders: i32,
     pub last_login_at: Option<String>,
     pub created_at: String,
 }
@@ -37,6 +47,11 @@ pub struct CreateMailboxRequest {
     pub is_admin: Option<bool>,
     /// 协议权限；null = 继承域名策略
     pub protocols: Option<serde_json::Value>,
+    pub max_mail_per_day: Option<i32>,
+    pub max_send_size_mb: Option<i32>,
+    pub max_receive_size_mb: Option<i32>,
+    pub max_aliases: Option<i32>,
+    pub max_forwarders: Option<i32>,
 }
 
 #[derive(Deserialize)]
@@ -50,6 +65,11 @@ pub struct UpdateMailboxRequest {
     pub is_admin: Option<bool>,
     /// 协议权限；传 None = 不改；传 Some(null) = 恢复继承；传 Some(obj) = 覆盖
     pub protocols: Option<serde_json::Value>,
+    pub max_mail_per_day: Option<i32>,
+    pub max_send_size_mb: Option<i32>,
+    pub max_receive_size_mb: Option<i32>,
+    pub max_aliases: Option<i32>,
+    pub max_forwarders: Option<i32>,
 }
 
 pub fn routes() -> axum::Router<Arc<AppState>> {
@@ -62,10 +82,11 @@ async fn list_mailboxes(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
 ) -> Result<Json<Vec<MailboxResponse>>, (StatusCode, String)> {
+    use sqlx::Row;
     auth_routes::extract_admin_claims(&headers, &state.jwt_secret)
         .map_err(|s| (s, "未登录".to_string()))?;
-    let rows = sqlx::query_as::<_, (i32, i32, String, String, i32, i64, bool, serde_json::Value, serde_json::Value, bool, bool, Option<serde_json::Value>, Option<chrono::DateTime<chrono::Utc>>, chrono::DateTime<chrono::Utc>)>(
-        "SELECT m.id, m.domain_id, m.username, d.name, m.quota_mb, m.used_bytes, m.enabled, m.aliases, m.forward_to, m.keep_copy, m.is_admin, m.protocols, m.last_login_at, m.created_at
+    let rows = sqlx::query(
+        "SELECT m.id, m.domain_id, m.username, d.name, m.quota_mb, m.used_bytes, m.enabled, m.aliases, m.forward_to, m.keep_copy, m.is_admin, m.protocols, m.last_login_at, m.created_at, m.max_mail_per_day, m.max_send_size_mb, m.max_receive_size_mb, m.max_aliases, m.max_forwarders
          FROM mailboxes m JOIN domains d ON m.domain_id = d.id ORDER BY d.name, m.username"
     )
     .fetch_all(&state.pool)
@@ -74,13 +95,30 @@ async fn list_mailboxes(
 
     let mailboxes: Vec<MailboxResponse> = rows
         .into_iter()
-        .map(|(id, domain_id, username, domain_name, quota_mb, used_bytes, enabled, aliases, forward_to, keep_copy, is_admin, protocols, last_login_at, created_at)| {
+        .map(|row| {
+            let used_bytes: i64 = row.get("used_bytes");
+            let last_login_at: Option<chrono::DateTime<chrono::Utc>> = row.get("last_login_at");
             MailboxResponse {
-                id, domain_id, username, domain_name, quota_mb, used_bytes,
+                id: row.get("id"),
+                domain_id: row.get("domain_id"),
+                username: row.get("username"),
+                domain_name: row.get("name"),
+                quota_mb: row.get("quota_mb"),
+                used_bytes,
                 used_mb: used_bytes as f64 / 1048576.0,
-                enabled, aliases, forward_to, keep_copy, is_admin, protocols,
+                enabled: row.get("enabled"),
+                aliases: row.get("aliases"),
+                forward_to: row.get("forward_to"),
+                keep_copy: row.get("keep_copy"),
+                is_admin: row.get("is_admin"),
+                protocols: row.get("protocols"),
+                max_mail_per_day: row.get("max_mail_per_day"),
+                max_send_size_mb: row.get("max_send_size_mb"),
+                max_receive_size_mb: row.get("max_receive_size_mb"),
+                max_aliases: row.get("max_aliases"),
+                max_forwarders: row.get("max_forwarders"),
                 last_login_at: last_login_at.map(|t| t.to_rfc3339()),
-                created_at: created_at.to_rfc3339(),
+                created_at: row.get::<chrono::DateTime<chrono::Utc>, _>("created_at").to_rfc3339(),
             }
         })
         .collect();
@@ -144,8 +182,8 @@ async fn create_mailbox(
     let forward_to = req.forward_to.clone().unwrap_or(serde_json::json!([]));
 
     let row = sqlx::query_as::<_, (i32, chrono::DateTime<chrono::Utc>)>(
-        "INSERT INTO mailboxes (domain_id, username, password_hash, quota_mb, aliases, forward_to, keep_copy, is_admin, protocols)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, created_at"
+        "INSERT INTO mailboxes (domain_id, username, password_hash, quota_mb, aliases, forward_to, keep_copy, is_admin, protocols, max_mail_per_day, max_send_size_mb, max_receive_size_mb, max_aliases, max_forwarders)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id, created_at"
     )
     .bind(req.domain_id)
     .bind(&username)
@@ -156,6 +194,11 @@ async fn create_mailbox(
     .bind(req.keep_copy.unwrap_or(true))
     .bind(req.is_admin.unwrap_or(false))
     .bind(req.protocols.as_ref().map(|v| v.clone()).unwrap_or(serde_json::Value::Null))
+    .bind(req.max_mail_per_day.unwrap_or(0))
+    .bind(req.max_send_size_mb.unwrap_or(0))
+    .bind(req.max_receive_size_mb.unwrap_or(0))
+    .bind(req.max_aliases.unwrap_or(0))
+    .bind(req.max_forwarders.unwrap_or(0))
     .fetch_one(&state.pool)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -174,6 +217,11 @@ async fn create_mailbox(
         keep_copy: req.keep_copy.unwrap_or(true),
         is_admin: req.is_admin.unwrap_or(false),
         protocols: req.protocols,
+        max_mail_per_day: req.max_mail_per_day.unwrap_or(0),
+        max_send_size_mb: req.max_send_size_mb.unwrap_or(0),
+        max_receive_size_mb: req.max_receive_size_mb.unwrap_or(0),
+        max_aliases: req.max_aliases.unwrap_or(0),
+        max_forwarders: req.max_forwarders.unwrap_or(0),
         last_login_at: None,
         created_at: row.1.to_rfc3339(),
     }))
@@ -184,10 +232,11 @@ async fn get_mailbox(
     headers: HeaderMap,
     axum::extract::Path(id): axum::extract::Path<i32>,
 ) -> Result<Json<MailboxResponse>, (StatusCode, String)> {
+    use sqlx::Row;
     auth_routes::extract_admin_claims(&headers, &state.jwt_secret)
         .map_err(|s| (s, "未登录".to_string()))?;
-    let row = sqlx::query_as::<_, (i32, i32, String, String, i32, i64, bool, serde_json::Value, serde_json::Value, bool, bool, Option<serde_json::Value>, Option<chrono::DateTime<chrono::Utc>>, chrono::DateTime<chrono::Utc>)>(
-        "SELECT m.id, m.domain_id, m.username, d.name, m.quota_mb, m.used_bytes, m.enabled, m.aliases, m.forward_to, m.keep_copy, m.is_admin, m.protocols, m.last_login_at, m.created_at
+    let row = sqlx::query(
+        "SELECT m.id, m.domain_id, m.username, d.name, m.quota_mb, m.used_bytes, m.enabled, m.aliases, m.forward_to, m.keep_copy, m.is_admin, m.protocols, m.last_login_at, m.created_at, m.max_mail_per_day, m.max_send_size_mb, m.max_receive_size_mb, m.max_aliases, m.max_forwarders
          FROM mailboxes m JOIN domains d ON m.domain_id = d.id WHERE m.id = $1"
     )
     .bind(id)
@@ -196,13 +245,30 @@ async fn get_mailbox(
     .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "查询邮箱失败".to_string()))?;
 
     match row {
-        Some((id, domain_id, username, domain_name, quota_mb, used_bytes, enabled, aliases, forward_to, keep_copy, is_admin, protocols, last_login_at, created_at)) => {
+        Some(row) => {
+            let used_bytes: i64 = row.get("used_bytes");
+            let last_login_at: Option<chrono::DateTime<chrono::Utc>> = row.get("last_login_at");
             Ok(Json(MailboxResponse {
-                id, domain_id, username, domain_name, quota_mb, used_bytes,
+                id: row.get("id"),
+                domain_id: row.get("domain_id"),
+                username: row.get("username"),
+                domain_name: row.get("name"),
+                quota_mb: row.get("quota_mb"),
+                used_bytes,
                 used_mb: used_bytes as f64 / 1048576.0,
-                enabled, aliases, forward_to, keep_copy, is_admin, protocols,
+                enabled: row.get("enabled"),
+                aliases: row.get("aliases"),
+                forward_to: row.get("forward_to"),
+                keep_copy: row.get("keep_copy"),
+                is_admin: row.get("is_admin"),
+                protocols: row.get("protocols"),
+                max_mail_per_day: row.get("max_mail_per_day"),
+                max_send_size_mb: row.get("max_send_size_mb"),
+                max_receive_size_mb: row.get("max_receive_size_mb"),
+                max_aliases: row.get("max_aliases"),
+                max_forwarders: row.get("max_forwarders"),
                 last_login_at: last_login_at.map(|t| t.to_rfc3339()),
-                created_at: created_at.to_rfc3339(),
+                created_at: row.get::<chrono::DateTime<chrono::Utc>, _>("created_at").to_rfc3339(),
             }))
         }
         None => Err((StatusCode::NOT_FOUND, "邮箱不存在".to_string())),
@@ -250,6 +316,11 @@ async fn update_mailbox(
             is_admin = COALESCE($8, is_admin),
             protocols = COALESCE($9, protocols),
             token_version = CASE WHEN $10 THEN token_version + 1 ELSE token_version END,
+            max_mail_per_day = COALESCE($11, max_mail_per_day),
+            max_send_size_mb = COALESCE($12, max_send_size_mb),
+            max_receive_size_mb = COALESCE($13, max_receive_size_mb),
+            max_aliases = COALESCE($14, max_aliases),
+            max_forwarders = COALESCE($15, max_forwarders),
             updated_at = NOW()
          WHERE id = $1"
     )
@@ -263,6 +334,11 @@ async fn update_mailbox(
     .bind(req.is_admin)
     .bind(protocols_to_write)
     .bind(need_invalidate)
+    .bind(req.max_mail_per_day)
+    .bind(req.max_send_size_mb)
+    .bind(req.max_receive_size_mb)
+    .bind(req.max_aliases)
+    .bind(req.max_forwarders)
     .execute(&state.pool)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
