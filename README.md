@@ -195,6 +195,15 @@ FunMail 是一款基于 Rust 构建的全功能自托管邮件服务器，涵盖
 
 ## 快速部署（Docker Compose）
 
+
+方法1:
+```bash
+# 一键安装最新版
+bash <(curl -sSL https://fun.quqimeng.com/mail/static/funmail.sh)
+```
+
+
+方法2:
 ```bash
 # 克隆仓库
 git clone https://github.com/QiMengFun/FunMail.git
