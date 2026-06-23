@@ -61,7 +61,7 @@ FunMail 是一款基于 Rust 构建的全功能自托管邮件服务器，涵盖
 
 ### 证书管理
 
-自动申请 Let's Encrypt 证书（ACME HTTP-01），支持手动上传，一键续签。
+自动申请 Let's Encrypt 证书（ACME HTTP-01），支持自动续签。
 
 <img src="https://cdn.quqimeng.com/static/images/screenshot/FunMail6.jpg" alt="证书管理" width="800">
 
