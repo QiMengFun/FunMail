@@ -154,10 +154,12 @@
         </template>
       </div>
     </div>
+    <!-- 登录页页脚 -->
+    <div x-show="footerHtml" class="login-footer" x-html="footerHtml"></div>
   </div>
 
   <!-- 已登录主界面 -->
-  <div x-show="!authLoading && authed" x-cloak>
+  <div x-show="!authLoading && authed" x-cloak style="display:flex;flex-direction:column;min-height:100vh">
     <header class="topbar">
       <div class="topbar-inner">
         <button class="hamburger" @click="toggleMobileNav()" :aria-label="t('nav_menu')">
@@ -707,7 +709,7 @@
         </div>
       </template>
 
-    </div>
+      </div>
   </div>
 
 </body>

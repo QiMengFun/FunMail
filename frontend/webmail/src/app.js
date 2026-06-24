@@ -70,6 +70,9 @@ export function webmailApp() {
     searchResults: null,
     searchLoading: false,
 
+    // 自定义页脚
+    footerHtml: '',
+
     // 页面名 → URL 路径映射
     pageRoutes: {
       inbox: '/inbox',
@@ -125,6 +128,9 @@ export function webmailApp() {
 
       // 检查 token
       await this.checkAuth();
+
+      // 加载自定义页脚
+      try { this.footerHtml = await api.footer(); } catch {}
     },
 
     async checkAuth() {

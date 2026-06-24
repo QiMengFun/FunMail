@@ -1630,6 +1630,23 @@
               </div>
             </div>
 
+            <!-- Webmail 页脚设置 -->
+            <div class="card">
+              <div class="card-header">
+                <span x-text="t('settings_webmail_footer')"></span>
+              </div>
+              <div class="p-6 space-y-4">
+                <div>
+                  <label class="label" x-text="t('settings_webmail_footer_label')"></label>
+                  <textarea x-model="footerForm.html" class="input" rows="4" placeholder='<a href="https://beian.miit.gov.cn/" target="_blank">京ICP备XXXXXXXX号</a>' style="font-family:monospace;font-size:12px"></textarea>
+                  <span class="text-xs block mt-1" style="color:var(--text-muted)" x-text="t('settings_webmail_footer_hint')"></span>
+                </div>
+                <div class="flex justify-end pt-2">
+                  <button class="btn-primary" @click="saveWebmailFooter()" x-text="t('settings_save_webmail_footer')"></button>
+                </div>
+              </div>
+            </div>
+
             <!-- 其他设置（JSON编辑） -->
             <template x-for="s in otherSettings" :key="s.key">
               <div class="card">

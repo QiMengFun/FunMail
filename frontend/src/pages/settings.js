@@ -56,6 +56,11 @@ window.pageMixins.settings = {
     current: localStorage.getItem('funmail_lang') || 'zh',
   },
 
+  // Webmail 页脚配置
+  footerForm: {
+    html: '',
+  },
+
   // 语言选项
   languageOptions: [
     { code: 'zh', label: '中文 (简体)' },
@@ -92,7 +97,7 @@ window.pageMixins.settings = {
   ],
 
   get otherSettings() {
-    return this.settings.filter(s => s.key !== 'security_config' && s.key !== 'delivery_config' && s.key !== 'timezone' && s.key !== 'smtp_config');
+    return this.settings.filter(s => s.key !== 'security_config' && s.key !== 'delivery_config' && s.key !== 'timezone' && s.key !== 'smtp_config' && s.key !== 'webmail_footer');
   },
 
   async loadSettings() {
@@ -147,6 +152,11 @@ window.pageMixins.settings = {
         this.rateLimit.register_max_per_window = v.register_max_per_window ?? 5;
         this.rateLimit.register_success_max_per_window = v.register_success_max_per_window ?? 1;
         this.rateLimit.block_duration_secs = v.block_duration_secs ?? 30;
+      }
+      // 加载 Webmail 页脚配置
+      const footerSetting = this.settings.find(s => s.key === 'webmail_footer');
+      if (footerSetting && footerSetting.value) {
+        this.footerForm.html = footerSetting.value.html || '';
       }
     } catch (e) {
       console.error('加载设置失败', e);
@@ -282,6 +292,18 @@ window.pageMixins.settings = {
       setLang(value);
       window.dispatchEvent(new CustomEvent('toast', { detail: { msg: t('success'), type: 'success' } }));
       window.dispatchEvent(new CustomEvent('lang-changed', { detail: { lang: value } }));
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('toast', { detail: { msg: e.message, type: 'error' } }));
+    }
+  },
+
+  // Webmail 页脚配置保存
+  async saveWebmailFooter() {
+    try {
+      const value = { html: this.footerForm.html };
+      await api.put('/settings/webmail_footer', { key: 'webmail_footer', value });
+      window.dispatchEvent(new CustomEvent('toast', { detail: { msg: t('success'), type: 'success' } }));
+      this.loadSettings();
     } catch (e) {
       window.dispatchEvent(new CustomEvent('toast', { detail: { msg: e.message, type: 'error' } }));
     }

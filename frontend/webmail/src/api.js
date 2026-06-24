@@ -87,6 +87,9 @@ export const api = {
     const sp = new URLSearchParams({ search: keyword, ...params });
     return request('/mail/inbox?' + sp.toString());
   },
+
+  // 页脚（公开接口，不需要 token）
+  footer: () => fetch('/api/webmail/footer').then(r => r.json()).then(d => d.html || '').catch(() => ''),
 };
 
 export function saveToken(t) {

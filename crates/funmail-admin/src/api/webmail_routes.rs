@@ -140,6 +140,7 @@ pub fn routes() -> axum::Router<Arc<AppState>> {
         .route("/webmail/register", axum::routing::post(register))
         .route("/webmail/captcha", axum::routing::get(get_captcha))
         .route("/webmail/captcha/verify", axum::routing::post(verify_captcha))
+        .route("/webmail/footer", axum::routing::get(get_footer))
 }
 
 /// 从 Authorization: Bearer <token> 头里解析 Claims
@@ -876,4 +877,23 @@ async fn login_with_rate_limit(
         record_success(&state, ip, false).await;
     }
     result
+}
+
+/// GET /api/webmail/footer — 公开接口，无需登录，返回自定义页脚 HTML
+async fn get_footer(
+    State(state): State<Arc<AppState>>,
+) -> Json<serde_json::Value> {
+    let footer: Option<serde_json::Value> = sqlx::query_scalar(
+        "SELECT value FROM settings WHERE key = 'webmail_footer'"
+    )
+    .fetch_optional(&state.pool)
+    .await
+    .ok()
+    .flatten();
+
+    let html = footer
+        .and_then(|v| v.get("html").and_then(|h| h.as_str()).map(String::from))
+        .unwrap_or_default();
+
+    Json(serde_json::json!({ "html": html }))
 }
