@@ -1844,6 +1844,7 @@
           window.addEventListener('site-name-changed', (e) => {
             this.siteName = e.detail.name || '';
             localStorage.setItem('funmail_site_name', this.siteName);
+            document.title = this.siteName || t('loginTitle');
           });
         },
 
@@ -1852,6 +1853,7 @@
             const data = await fetch('/api/webmail/site-name').then(r => r.json());
             this.siteName = data.name || '';
             localStorage.setItem('funmail_site_name', this.siteName);
+            document.title = this.siteName || t('loginTitle');
           } catch {}
         },
 

@@ -135,7 +135,10 @@ export function webmailApp() {
       // 加载自定义页脚
       try { this.footerHtml = await api.footer(); } catch {}
       // 加载自定义网站名称
-      try { this.siteName = await api.siteName(); } catch {}
+      try {
+        this.siteName = await api.siteName();
+        if (this.siteName) document.title = this.siteName;
+      } catch {}
     },
 
     async checkAuth() {
