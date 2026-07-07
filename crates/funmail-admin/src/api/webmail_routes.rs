@@ -141,6 +141,7 @@ pub fn routes() -> axum::Router<Arc<AppState>> {
         .route("/webmail/captcha", axum::routing::get(get_captcha))
         .route("/webmail/captcha/verify", axum::routing::post(verify_captcha))
         .route("/webmail/footer", axum::routing::get(get_footer))
+        .route("/webmail/site-name", axum::routing::get(get_site_name))
 }
 
 /// 从 Authorization: Bearer <token> 头里解析 Claims
@@ -896,4 +897,23 @@ async fn get_footer(
         .unwrap_or_default();
 
     Json(serde_json::json!({ "html": html }))
+}
+
+/// GET /api/webmail/site-name — 公开接口，无需登录，返回自定义网站名称
+async fn get_site_name(
+    State(state): State<Arc<AppState>>,
+) -> Json<serde_json::Value> {
+    let val: Option<serde_json::Value> = sqlx::query_scalar(
+        "SELECT value FROM settings WHERE key = 'site_name'"
+    )
+    .fetch_optional(&state.pool)
+    .await
+    .ok()
+    .flatten();
+
+    let name = val
+        .and_then(|v| v.as_str().map(String::from))
+        .unwrap_or_default();
+
+    Json(serde_json::json!({ "name": name }))
 }

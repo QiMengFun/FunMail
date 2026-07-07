@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <base href="/">
-  <title x-text="t('loginTitle')">FunMail</title>
+  <title x-text="siteName || t('loginTitle')">FunMail</title>
   <link rel="icon" type="image/png" href="/src/static/images/logo.png">
   <style type="text/tailwindcss">@import "tailwindcss";</style>
   <link rel="stylesheet" href="src/custom.css">
@@ -1630,6 +1630,23 @@
               </div>
             </div>
 
+            <!-- 网站名称设置 -->
+            <div class="card">
+              <div class="card-header">
+                <span x-text="t('settings_site_name')"></span>
+              </div>
+              <div class="p-6 space-y-4">
+                <div>
+                  <label class="label" x-text="t('settings_site_name_label')"></label>
+                  <input x-model="siteNameForm.name" class="input" :placeholder="t('settings_site_name_placeholder')" style="max-width:400px">
+                  <span class="text-xs block mt-1" style="color:var(--text-muted)" x-text="t('settings_site_name_hint')"></span>
+                </div>
+                <div class="flex justify-end pt-2">
+                  <button class="btn-primary" @click="saveSiteName()" x-text="t('settings_save_site_name')"></button>
+                </div>
+              </div>
+            </div>
+
             <!-- Webmail 页脚设置 -->
             <div class="card">
               <div class="card-header">
@@ -1791,6 +1808,7 @@
         username: '',
         adminRole: localStorage.getItem('funmail_role') || 'admin',
         appVersion: localStorage.getItem('funmail_version') || '0.1.0',
+        siteName: localStorage.getItem('funmail_site_name') || '',
         get isViewer() { return this.adminRole === 'viewer'; },
 
         // 只读用户操作拦截
@@ -1820,6 +1838,21 @@
           window.addEventListener('lang-changed', (e) => {
             this.lang = e.detail.lang;
           });
+          // 加载网站名称
+          this.loadSiteName();
+          // 监听设置页保存后的网站名称变更
+          window.addEventListener('site-name-changed', (e) => {
+            this.siteName = e.detail.name || '';
+            localStorage.setItem('funmail_site_name', this.siteName);
+          });
+        },
+
+        async loadSiteName() {
+          try {
+            const data = await fetch('/api/webmail/site-name').then(r => r.json());
+            this.siteName = data.name || '';
+            localStorage.setItem('funmail_site_name', this.siteName);
+          } catch {}
         },
 
         navigate(path) {

@@ -90,6 +90,9 @@ export const api = {
 
   // 页脚（公开接口，不需要 token）
   footer: () => fetch('/api/webmail/footer').then(r => r.json()).then(d => d.html || '').catch(() => ''),
+
+  // 网站名称（公开接口，不需要 token）
+  siteName: () => fetch('/api/webmail/site-name').then(r => r.json()).then(d => d.name || '').catch(() => ''),
 };
 
 export function saveToken(t) {

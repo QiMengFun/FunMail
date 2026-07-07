@@ -61,6 +61,11 @@ window.pageMixins.settings = {
     html: '',
   },
 
+  // 网站名称配置
+  siteNameForm: {
+    name: '',
+  },
+
   // 语言选项
   languageOptions: [
     { code: 'zh', label: '中文 (简体)' },
@@ -97,7 +102,7 @@ window.pageMixins.settings = {
   ],
 
   get otherSettings() {
-    return this.settings.filter(s => s.key !== 'security_config' && s.key !== 'delivery_config' && s.key !== 'timezone' && s.key !== 'smtp_config' && s.key !== 'webmail_footer');
+    return this.settings.filter(s => s.key !== 'security_config' && s.key !== 'delivery_config' && s.key !== 'timezone' && s.key !== 'smtp_config' && s.key !== 'webmail_footer' && s.key !== 'site_name');
   },
 
   async loadSettings() {
@@ -157,6 +162,11 @@ window.pageMixins.settings = {
       const footerSetting = this.settings.find(s => s.key === 'webmail_footer');
       if (footerSetting && footerSetting.value) {
         this.footerForm.html = footerSetting.value.html || '';
+      }
+      // 加载网站名称配置
+      const siteNameSetting = this.settings.find(s => s.key === 'site_name');
+      if (siteNameSetting && siteNameSetting.value) {
+        this.siteNameForm.name = typeof siteNameSetting.value === 'string' ? siteNameSetting.value : '';
       }
     } catch (e) {
       console.error('加载设置失败', e);
@@ -303,6 +313,19 @@ window.pageMixins.settings = {
       const value = { html: this.footerForm.html };
       await api.put('/settings/webmail_footer', { key: 'webmail_footer', value });
       window.dispatchEvent(new CustomEvent('toast', { detail: { msg: t('success'), type: 'success' } }));
+      this.loadSettings();
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('toast', { detail: { msg: e.message, type: 'error' } }));
+    }
+  },
+
+  // 网站名称配置保存
+  async saveSiteName() {
+    try {
+      const value = this.siteNameForm.name.trim();
+      await api.put('/settings/site_name', { key: 'site_name', value });
+      window.dispatchEvent(new CustomEvent('toast', { detail: { msg: t('success'), type: 'success' } }));
+      window.dispatchEvent(new CustomEvent('site-name-changed', { detail: { name: value } }));
       this.loadSettings();
     } catch (e) {
       window.dispatchEvent(new CustomEvent('toast', { detail: { msg: e.message, type: 'error' } }));

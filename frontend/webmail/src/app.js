@@ -73,6 +73,9 @@ export function webmailApp() {
     // 自定义页脚
     footerHtml: '',
 
+    // 自定义网站名称
+    siteName: '',
+
     // 页面名 → URL 路径映射
     pageRoutes: {
       inbox: '/inbox',
@@ -131,6 +134,8 @@ export function webmailApp() {
 
       // 加载自定义页脚
       try { this.footerHtml = await api.footer(); } catch {}
+      // 加载自定义网站名称
+      try { this.siteName = await api.siteName(); } catch {}
     },
 
     async checkAuth() {
